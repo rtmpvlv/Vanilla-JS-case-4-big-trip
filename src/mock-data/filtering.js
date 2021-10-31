@@ -4,15 +4,15 @@ import {
 } from './utils-and-const';
 
 const tripPointsToFilterMap = {
-  everything: (points) => points,
-  future: (points) => points.filter((point) => isFuture(point.startTime)),
-  past: (points) => points.filter((point) => isPast(point.startTime)),
+  Everything: (points) => points.length,
+  Future: (points) => points.filter((point) => isFuture(point.dateFrom)).length,
+  Past: (points) => points.filter((point) => isPast(point.dateFrom)).length,
 };
 
 const setFiltering = (points) => Object.entries(tripPointsToFilterMap).map(
   ([filterName, filterPoints]) => ({
     name: filterName,
-    filtredPoinsts: filterPoints(points),
+    filtredPoints: filterPoints(points),
   }),
 );
 
