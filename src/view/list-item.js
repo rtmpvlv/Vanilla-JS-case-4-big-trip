@@ -1,5 +1,7 @@
+/* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
 import { convertDuration } from '../mock-data/utils-and-const';
+import { createElement } from '../utils';
 
 const createTripItemTemplate = (tripPoint) => {
   const {
@@ -62,4 +64,24 @@ const createTripItemTemplate = (tripPoint) => {
     `;
 };
 
-export default createTripItemTemplate;
+export default class ListItem {
+  constructor(points) {
+    this._element = null;
+    this._points = points;
+  }
+
+  getTemplate() {
+    return createTripItemTemplate(this._points);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

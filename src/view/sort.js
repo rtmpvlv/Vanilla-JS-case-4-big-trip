@@ -1,5 +1,10 @@
-const createTripSortTemplate = () => (
-  `
+/* eslint-disable no-underscore-dangle */
+import { createElement } from '../utils';
+
+export default class Sort {
+  constructor() {
+    this._element = null;
+    this._markup = `
     <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
       <div class="trip-sort__item  trip-sort__item--day">
         <input id="sort-day" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-day" checked>
@@ -22,7 +27,17 @@ const createTripSortTemplate = () => (
         <label class="trip-sort__btn" for="sort-offer">Offers</label>
       </div>
     </form>
-  `
-);
+  `;
+  }
 
-export default createTripSortTemplate;
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._markup);
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

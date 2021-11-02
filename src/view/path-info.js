@@ -1,4 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
+import { createElement } from '../utils';
 
 const renderTripPoints = (array) => {
   const uniquePoint = new Set(array.map(({ destination }) => destination.name));
@@ -16,4 +18,24 @@ const createTripInformationTemplate = (points) => (`
     </section>`
 );
 
-export default createTripInformationTemplate;
+export default class Information {
+  constructor(points) {
+    this._element = null;
+    this._points = points;
+  }
+
+  getTemplate() {
+    return createTripInformationTemplate(this._points);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

@@ -1,3 +1,6 @@
+/* eslint-disable no-underscore-dangle */
+import { createElement } from '../utils';
+
 const calcTotalPrice = (array) => {
   let price = 0;
   array.forEach((element) => {
@@ -14,4 +17,24 @@ const createTripPriceTemplate = (points) => (
   `
 );
 
-export default createTripPriceTemplate;
+export default class Price {
+  constructor(points) {
+    this._element = null;
+    this._points = points;
+  }
+
+  getTemplate() {
+    return createTripPriceTemplate(this._points);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

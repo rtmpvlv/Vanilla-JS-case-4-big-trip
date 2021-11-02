@@ -1,5 +1,14 @@
+/* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
-import { PointTypes } from '../mock-data/utils-and-const';
+import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
+import { createElement } from '../utils';
+
+const NEW_POINT_DEFAULT_INFO = {
+  basePrice: 0,
+  destination: '',
+  offers: '',
+  type: '',
+};
 
 const createAdditionFormTemplate = (tripPoint) => {
   const {
@@ -42,12 +51,15 @@ const createAdditionFormTemplate = (tripPoint) => {
       </div>`).join('')
   );
 
+  const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
+
   const repeatingTemplate = createTypeListTemplate(PointTypes);
   const extraOptionsTemplate = renderExtraOptions(offers.offers);
   const photosTemplate = renderPhotos(destination.pictures);
+  const destinationList = createDestinationCities(DestinationPoints);
 
   return `
-    <li class="trip-events__item hidden">
+    <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
@@ -71,9 +83,7 @@ const createAdditionFormTemplate = (tripPoint) => {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
+              ${destinationList}
             </datalist>
           </div>
 
@@ -113,4 +123,24 @@ const createAdditionFormTemplate = (tripPoint) => {
   `;
 };
 
-export default createAdditionFormTemplate;
+export default class AdditionForm {
+  constructor(points = NEW_POINT_DEFAULT_INFO) {
+    this._element = null;
+    this._points = points;
+  }
+
+  getTemplate() {
+    return createAdditionFormTemplate(this._points);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
