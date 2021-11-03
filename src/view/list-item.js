@@ -16,12 +16,12 @@ const createTripItemTemplate = (tripPoint) => {
     if (!array || array.length === 0) {
       return '';
     }
-    return `
+    return array.map((item) => `
     <li class="event__offer">
-      <span class="event__offer-title">${array[0].title}</span>
+      <span class="event__offer-title">${item.title}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price">${array[0].price}</span>
-    </li>`;
+      <span class="event__offer-price">${item.price}</span>
+    </li>`).join('');
   };
 
   const convertedDuration = convertDuration(duration);
