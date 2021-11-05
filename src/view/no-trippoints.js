@@ -1,23 +1,15 @@
 /* eslint-disable no-underscore-dangle */
-import { createElement } from '../utils';
+import AbstractView from './abstract';
 
-export default class NoTask {
+export default class NoTask extends AbstractView {
   constructor() {
-    this._element = null;
+    super();
     this._markup = `
     <p class="trip-events__msg">Click New Event to create your first point</p>
     `;
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._markup);
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  getTemplate() {
+    return this._markup;
   }
 }

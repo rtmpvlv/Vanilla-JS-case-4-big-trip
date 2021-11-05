@@ -1,9 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import { createElement } from '../utils';
 
-export default class Sort {
+import AbstractView from './abstract';
+
+export default class Sort extends AbstractView {
   constructor() {
-    this._element = null;
+    super();
     this._markup = `
     <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
       <div class="trip-sort__item  trip-sort__item--day">
@@ -30,14 +31,7 @@ export default class Sort {
   `;
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._markup);
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  getTemplate() {
+    return this._markup;
   }
 }

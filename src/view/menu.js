@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
-import { createElement } from '../utils';
+import AbstractView from './abstract';
 
-export default class Menu {
+export default class Menu extends AbstractView {
   constructor() {
-    this._element = null;
+    super();
     this._markup = `
     <nav class="trip-controls__trip-tabs  trip-tabs">
       <a class="trip-tabs__btn  trip-tabs__btn--active" href="#">Table</a>
@@ -12,14 +12,7 @@ export default class Menu {
   `;
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._markup);
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  getTemplate() {
+    return this._markup;
   }
 }

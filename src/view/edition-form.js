@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
+import AbstractView from './abstract';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { createElement } from '../utils';
 
 const createEditionFormTemplate = (tripPoint) => {
   const {
@@ -120,24 +120,35 @@ const createEditionFormTemplate = (tripPoint) => {
   `;
 };
 
-export default class EditionForm {
+export default class EditionForm extends AbstractView {
   constructor(points) {
-    this._element = null;
+    super();
     this._points = points;
+    this._editClickHandler = this._editClickHandler.bind(this);
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
   }
 
   getTemplate() {
     return createEditionFormTemplate(this._points);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editClickHandler);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
   }
 }

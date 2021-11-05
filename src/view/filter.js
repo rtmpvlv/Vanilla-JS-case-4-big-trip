@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { createElement } from '../utils';
+import AbstractView from './abstract';
 
 const createTripFiltersTemplate = ((filters) => {
   const filterItemTemplate = filters.map(({ name, filtredPoints }) => `
@@ -16,24 +16,13 @@ const createTripFiltersTemplate = ((filters) => {
   `;
 });
 
-export default class Filter {
+export default class Filter extends AbstractView {
   constructor(filters) {
-    this._element = null;
+    super();
     this._filters = filters;
   }
 
   getTemplate() {
     return createTripFiltersTemplate(this._filters);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

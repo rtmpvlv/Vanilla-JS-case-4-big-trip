@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
+import AbstractView from './abstract';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { createElement } from '../utils';
 
 const NEW_POINT_DEFAULT_INFO = {
   basePrice: 0,
@@ -123,24 +123,13 @@ const createAdditionFormTemplate = (tripPoint) => {
   `;
 };
 
-export default class AdditionForm {
+export default class AdditionForm extends AbstractView {
   constructor(points = NEW_POINT_DEFAULT_INFO) {
-    this._element = null;
+    super();
     this._points = points;
   }
 
   getTemplate() {
     return createAdditionFormTemplate(this._points);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

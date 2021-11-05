@@ -40,7 +40,7 @@ const generateOffers = () => {
   for (let i = 0; i < getRandomInteger(0, 5); i += 1) {
     arr.push({
       title: getRandomArrayElement(ExtraOptions),
-      price: getRandomInteger(100, 500),
+      price: getRandomInteger(10, 100),
     });
   }
   return arr;
@@ -57,7 +57,7 @@ const getTripPointInfo = () => {
   const dateTo = dayjs(dateFrom).add(duration, 'minute');
 
   return {
-    basePrice: getRandomInteger(100, 5000),
+    basePrice: getRandomInteger(100, 1000),
     dateFrom,
     dateTo,
     destination: generateDestionationInfo(),

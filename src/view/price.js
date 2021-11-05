@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { createElement } from '../utils';
+import AbstractView from './abstract';
 
 const calcTotalPrice = (array) => {
   let price = 0;
@@ -17,24 +17,13 @@ const createTripPriceTemplate = (points) => (
   `
 );
 
-export default class Price {
+export default class Price extends AbstractView {
   constructor(points) {
-    this._element = null;
+    super();
     this._points = points;
   }
 
   getTemplate() {
     return createTripPriceTemplate(this._points);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

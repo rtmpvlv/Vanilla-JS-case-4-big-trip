@@ -9,7 +9,7 @@ import ListItemView from './view/list-item';
 import NoTaskView from './view/no-trippoints';
 import getTripPointInfo from './mock-data/mock-data';
 import setFiltering from './mock-data/filtering';
-import { render, RenderPosition } from './utils';
+import { render, RenderPosition, replace } from './utils/render';
 
 const POINTS_COUNT = 15;
 
@@ -30,11 +30,11 @@ const renderListItem = (place, point) => {
   const editItemForm = new EditFormView(point);
 
   const replaceListItemToForm = () => {
-    place.replaceChild(editItemForm.getElement(), listItemForm.getElement());
+    replace(editItemForm, listItemForm);
   };
 
   const replaceFormToListItem = () => {
-    place.replaceChild(listItemForm.getElement(), editItemForm.getElement());
+    replace(listItemForm, editItemForm);
   };
 
   const keyPressed = (evt) => {
@@ -45,36 +45,35 @@ const renderListItem = (place, point) => {
     }
   };
 
-  listItemForm.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+  listItemForm.setEditClickHandler(() => {
     document.addEventListener('keydown', keyPressed);
     replaceListItemToForm();
   });
 
-  editItemForm.getElement().querySelector('form').addEventListener('submit', (evt) => {
-    evt.preventDefault();
+  editItemForm.setFormSubmitHandler(() => {
     replaceFormToListItem();
     document.removeEventListener('keydown', keyPressed);
   });
 
-  editItemForm.getElement().querySelector('.event__rollup-btn').addEventListener('click', replaceFormToListItem);
+  editItemForm.setEditClickHandler(replaceFormToListItem);
 
-  render(place, listItemForm.getElement(), RenderPosition.BEFOREEND);
+  render(place, listItemForm, RenderPosition.BEFOREEND);
 };
 
 const renderView = (points, filters) => {
-  render(headerMenuNavigation, new MenuView().getElement(), RenderPosition.BEFOREEND);
-  render(headerMenuFilters, new FilterView(filters).getElement(), RenderPosition.BEFOREEND);
+  render(headerMenuNavigation, new MenuView(), RenderPosition.BEFOREEND);
+  render(headerMenuFilters, new FilterView(filters), RenderPosition.BEFOREEND);
 
   if (!points || points.length === 0) {
-    render(eventsList, new NoTaskView().getElement(), RenderPosition.BEFOREEND);
+    render(eventsList, new NoTaskView(), RenderPosition.BEFOREEND);
   } else {
-    render(header, new PathInfoView(points).getElement(), RenderPosition.AFTERBEGIN);
+    render(header, new PathInfoView(points), RenderPosition.AFTERBEGIN);
     const tripInformation = header.querySelector('.trip-main__trip-info');
-    render(tripInformation, new PriceView(points).getElement(), RenderPosition.BEFOREEND);
-    render(mainTripEventsSection, new SortView().getElement(), RenderPosition.AFTERBEGIN);
+    render(tripInformation, new PriceView(points), RenderPosition.BEFOREEND);
+    render(mainTripEventsSection, new SortView(), RenderPosition.AFTERBEGIN);
     points.forEach((item) => renderListItem(eventsList, item));
   }
-  // render(eventsList, new AddFormView().getElement(), RenderPosition.BEFOREEND);
+  // render(eventsList, new AddFormView(), RenderPosition.BEFOREEND);
 };
 renderView(tripPoints, filteredPoints);
 

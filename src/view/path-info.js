@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
-import { createElement } from '../utils';
+import AbstractView from './abstract';
 
 const renderTripPoints = (array) => {
   const uniquePoint = new Set(array.map(({ destination }) => destination.name));
@@ -18,24 +18,13 @@ const createTripInformationTemplate = (points) => (`
     </section>`
 );
 
-export default class Information {
+export default class Information extends AbstractView {
   constructor(points) {
-    this._element = null;
+    super();
     this._points = points;
   }
 
   getTemplate() {
     return createTripInformationTemplate(this._points);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
