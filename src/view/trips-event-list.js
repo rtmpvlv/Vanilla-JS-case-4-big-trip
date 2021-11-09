@@ -1,12 +1,11 @@
 /* eslint-disable no-underscore-dangle */
+
 import AbstractView from './abstract';
 
-export default class NoPoints extends AbstractView {
+export default class TripsEventSection extends AbstractView {
   constructor() {
     super();
-    this._markup = `
-    <p class="trip-events__msg">Click New Event to create your first point</p>
-    `;
+    this._markup = '<ul class="trip-events__list"></ul>';
   }
 
   getTemplate() {

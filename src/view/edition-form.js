@@ -144,7 +144,7 @@ export default class EditionForm extends AbstractView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this._points);
   }
 
   setFormSubmitHandler(callback) {

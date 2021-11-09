@@ -6,7 +6,7 @@ export const RenderPosition = {
   BEFOREEND: 'beforeend',
 };
 
-export const render = (container, element, place) => {
+export const render = (container, element, place = RenderPosition.BEFOREEND) => {
   let containerElement = container;
   let injectedElement = element;
 
@@ -25,7 +25,8 @@ export const render = (container, element, place) => {
     case RenderPosition.BEFOREEND:
       containerElement.append(injectedElement);
       break;
-    default: break;
+    default:
+      throw new Error('Unknown render position.');
   }
 };
 

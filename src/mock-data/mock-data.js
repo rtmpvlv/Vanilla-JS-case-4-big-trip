@@ -61,7 +61,7 @@ const getTripPointInfo = () => {
     dateFrom,
     dateTo,
     destination: generateDestionationInfo(),
-    id: getRandomInteger(1, 1000),
+    id: getRandomInteger(1, 100000000),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     offers: generateOfferInfo(),
     type: getRandomArrayElement(PointTypes),
