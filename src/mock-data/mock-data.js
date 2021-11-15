@@ -10,7 +10,7 @@ import {
   getRandomInteger
 } from './utils-and-const';
 
-const generateDescription = () => {
+export const generateDescription = () => {
   const arr = [];
   for (let i = 1; i < getRandomInteger(1, Descriptions.length); i += 1) {
     arr.push(Descriptions[i]);
@@ -18,7 +18,7 @@ const generateDescription = () => {
   return arr.join(' ');
 };
 
-const generateLandscapePicsArray = () => {
+export const generateLandscapePicsArray = () => {
   const arr = [];
   for (let i = 1; i < getRandomInteger(2, 5); i += 1) {
     arr.push({
@@ -35,7 +35,7 @@ const generateDestionationInfo = () => ({
   pictures: generateLandscapePicsArray(),
 });
 
-const generateOffers = () => {
+export const generateOffers = () => {
   const arr = [];
   for (let i = 0; i < getRandomInteger(0, 5); i += 1) {
     arr.push({
@@ -46,15 +46,16 @@ const generateOffers = () => {
   return arr;
 };
 
-const generateOfferInfo = () => ({
-  type: getRandomArrayElement(PointTypes),
-  offers: generateOffers(),
-});
-
-const getTripPointInfo = () => {
+export const getTripPointInfo = () => {
   const dateFrom = generateDate(7, 7);
-  const duration = getRandomInteger(30, 720);
-  const dateTo = dayjs(dateFrom).add(duration, 'minute');
+  const dateTo = generateDate(0, 10);
+  const duration = dayjs(dateTo).diff(dateFrom, 'm');
+  const type = getRandomArrayElement(PointTypes);
+
+  const generateOfferInfo = () => ({
+    type,
+    offers: generateOffers(),
+  });
 
   return {
     basePrice: getRandomInteger(100, 1000),
@@ -64,9 +65,7 @@ const getTripPointInfo = () => {
     id: getRandomInteger(1, 100000000),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     offers: generateOfferInfo(),
-    type: getRandomArrayElement(PointTypes),
+    type,
     duration,
   };
 };
-
-export default getTripPointInfo;

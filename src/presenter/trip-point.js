@@ -23,6 +23,34 @@ export default class TripEventsListItem {
     this._replaceFormToListItem = this._replaceFormToListItem.bind(this);
     this._keyPressed = this._keyPressed.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
+    this._handleFormSubmit = this._handleFormSubmit.bind(this);
+  }
+
+  renderListItem(point) {
+    this._point = point;
+    const prevListItem = this._listItemView;
+    const prevEditFrom = this._editFormView;
+    this._listItemView = new ListItemView(this._point);
+    this._editFormView = new EditFormView(this._point);
+
+    this._listItemView.setEditClickHandler(this._replaceListItemToForm);
+    this._listItemView.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._editFormView.setEditClickHandler(this._replaceFormToListItem);
+    this._editFormView.setFormSubmitHandler(this._handleFormSubmit);
+
+    if (prevListItem === null || prevEditFrom === null) {
+      render(this._tripEventsList, this._listItemView);
+      return;
+    }
+
+    if (this._mode === Mode.DEFAULT) {
+      replace(this._listItemView, prevListItem);
+    } else if (this._mode === Mode.EDITING) {
+      replace(this._editFormView, prevEditFrom);
+    }
+
+    remove(prevListItem);
+    remove(prevEditFrom);
   }
 
   _replaceListItemToForm() {
@@ -33,6 +61,7 @@ export default class TripEventsListItem {
   }
 
   _replaceFormToListItem() {
+    this._editFormView.reset(this._point);
     replace(this._listItemView, this._editFormView);
     document.removeEventListener('keydown', this._keyPressed);
     this._mode = Mode.DEFAULT;
@@ -41,6 +70,7 @@ export default class TripEventsListItem {
   _keyPressed(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc' || evt.key === 'ArrowUp') {
       evt.preventDefault();
+      this._editFormView.reset(this._point);
       this._replaceFormToListItem();
       document.removeEventListener('keydown', this._keyPressed);
     }
@@ -72,32 +102,5 @@ export default class TripEventsListItem {
   _handleFormSubmit(point) {
     this._changeData(point);
     this._replaceFormToListItem();
-  }
-
-  renderListItem(point) {
-    this._point = point;
-    const prevListItem = this._listItemView;
-    const prevEditFrom = this._editFormView;
-    this._listItemView = new ListItemView(this._point);
-    this._editFormView = new EditFormView(this._point);
-
-    this._listItemView.setEditClickHandler(this._replaceListItemToForm);
-    this._listItemView.setFavoriteClickHandler(this._handleFavoriteClick);
-    this._editFormView.setEditClickHandler(this._replaceFormToListItem);
-    this._editFormView.setFormSubmitHandler(this._handleFormSubmit);
-
-    if (prevListItem === null || prevEditFrom === null) {
-      render(this._tripEventsList, this._listItemView);
-      return;
-    }
-
-    if (this._mode === Mode.DEFAULT) {
-      replace(this._listItemView, prevListItem);
-    } else if (this._mode === Mode.EDITING) {
-      replace(this._editFormView, prevEditFrom);
-    }
-
-    remove(prevListItem);
-    remove(prevEditFrom);
   }
 }

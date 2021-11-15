@@ -1,12 +1,19 @@
+/* eslint-disable prefer-object-spread */
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
-import AbstractView from './abstract';
+import flatpickr from 'flatpickr';
+import SmartView from './smart';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
+import { generateOffers, generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
 
-const createEditionFormTemplate = (tripPoint) => {
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
+const DATE_PICKER_FORMAT = 'd/m/y H:i';
+
+const createEditionFormTemplate = (data) => {
   const {
     basePrice, dateFrom, dateTo, destination, offers, type,
-  } = tripPoint;
+  } = data;
 
   const date1 = dayjs(dateFrom).format('DD/MM/YY HH:mm');
   const date2 = dayjs(dateTo).format('DD/MM/YY HH:mm');
@@ -16,13 +23,14 @@ const createEditionFormTemplate = (tripPoint) => {
       return '';
     }
 
-    const optionsList = array.map(({ title, price }) => `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
-        <label class="event__offer-label" for="event-offer-${title}-1">
-          <span class="event__offer-title">${title}</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">${price}</span>
-        </label>
+    const optionsList = array.map(({ title, price }) => `
+    <div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
+      <label class="event__offer-label" for="event-offer-${title}-1">
+        <span class="event__offer-title">${title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${price}</span>
+      </label>
       </div>`).join('');
     const optionSection = `
       <section class="event__section  event__section--offers">
@@ -120,16 +128,36 @@ const createEditionFormTemplate = (tripPoint) => {
   `;
 };
 
-export default class EditionForm extends AbstractView {
-  constructor(points) {
+export default class EditionForm extends SmartView {
+  constructor(point) {
     super();
-    this._points = points;
+    this._data = EditionForm.parseFormToData(point);
+    this._dateFromPicker = null;
     this._editClickHandler = this._editClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._typeChangeHandler = this._typeChangeHandler.bind(this);
+    this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._dueDateFromChangeHandler = this._dueDateFromChangeHandler.bind(this);
+    this._dueDateToChangeHandler = this._dueDateToChangeHandler.bind(this);
+    this._setInnerHandlers();
+    this._setDateFromDatepicker();
+    this._setDateToDatepicker();
   }
 
   getTemplate() {
-    return createEditionFormTemplate(this._points);
+    return createEditionFormTemplate(this._data);
+  }
+
+  restoreHandlers() {
+    this._setDateFromDatepicker();
+    this._setDateToDatepicker();
+    this._setInnerHandlers();
+    this.setEditClickHandler(this._callback.editClick);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+  }
+
+  reset(point) {
+    this.updateData(EditionForm.parseFormToData(point));
   }
 
   _editClickHandler(evt) {
@@ -144,11 +172,102 @@ export default class EditionForm extends AbstractView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._points);
+    this._callback.formSubmit(EditionForm.parseDataToForm(this._data));
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
-    this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
+    this.getElement().querySelector('.event--edit').addEventListener('submit', this._formSubmitHandler);
+  }
+
+  static parseFormToData(point) {
+    return Object.assign({}, point);
+  }
+
+  static parseDataToForm(data) {
+    return Object.assign({}, data);
+  }
+
+  _typeChangeHandler(evt) {
+    evt.preventDefault();
+    if (PointTypes.includes(evt.target.innerText)) {
+      this.updateData({
+        type: evt.target.innerText,
+        offers: {
+          type: evt.target.innerText,
+          offers: generateOffers(),
+        },
+      });
+    }
+  }
+
+  _destinationChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      destination: {
+        name: evt.target.value,
+        description: generateDescription(),
+        pictures: generateLandscapePicsArray(),
+      },
+    });
+  }
+
+  _setInnerHandlers() {
+    this.getElement()
+      .querySelector('.event__type-group')
+      .addEventListener('click', this._typeChangeHandler);
+    this.getElement()
+      .querySelector('#event-destination-1')
+      .addEventListener('change', this._destinationChangeHandler);
+  }
+
+  _setDateFromDatepicker() {
+    if (this._dateFromPicker) {
+      this._dateFromPicker.destroy();
+      this._dateFromPicker = null;
+    }
+
+    this._dateFromPicker = flatpickr(
+      this.getElement().querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: DATE_PICKER_FORMAT,
+        defaultDate: this._data.dateFrom,
+        onChange: this._dueDateFromChangeHandler,
+      },
+    );
+  }
+
+  _dueDateFromChangeHandler(userDate) {
+    this.updateData({
+      dateFrom: userDate,
+      duration: dayjs(this._data.dateTo).diff(userDate, 'm'),
+    });
+  }
+
+  _setDateToDatepicker() {
+    if (this._dateToPicker) {
+      this._dateToPicker.destroy();
+      this._dateToPicker = null;
+    }
+
+    this._dateToPicker = flatpickr(
+      this.getElement().querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: DATE_PICKER_FORMAT,
+        defaultDate: this._data.dateTo,
+        onChange: this._dueDateToChangeHandler,
+      },
+    );
+  }
+
+  _dueDateToChangeHandler(userDate) {
+    this.updateData({
+      dateTo: userDate,
+      duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
+    });
   }
 }

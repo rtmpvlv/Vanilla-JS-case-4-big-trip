@@ -2,7 +2,7 @@ import FilterView from './view/filter';
 import PathInfoView from './view/path-info';
 import PriceView from './view/price';
 import MenuView from './view/menu';
-import getTripPointInfo from './mock-data/mock-data';
+import { getTripPointInfo } from './mock-data/mock-data';
 import setFiltering from './mock-data/filtering';
 import { render, RenderPosition } from './utils/render';
 import TripEventsList from './presenter/trip-events-list';
@@ -30,7 +30,6 @@ const renderView = (points, filters) => {
     render(tripInformation, new PriceView(points));
   }
 };
-  // render(eventsList, new AddFormView());
 renderView(tripPoints, filteredPoints);
 
 export default POINTS_COUNT;

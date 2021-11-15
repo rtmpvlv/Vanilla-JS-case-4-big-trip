@@ -7,12 +7,13 @@ import { render } from '../utils/render';
 import { updateItem } from '../mock-data/utils-and-const';
 import SortType from '../utils/constants';
 import { sortPrice, sortDuration } from '../utils/task-utils';
+// import AddForm from './add-form';
 
 export default class TripEventsList {
-  constructor(points, tripsEventSection) {
+  constructor(points, place) {
     this._points = points.slice();
     this._sourcedPoints = points.slice();
-    this._tripEventsSection = tripsEventSection;
+    this._tripEventsSection = place;
     this._currentSortType = SortType.DAY;
 
     this._tripEventsList = new TripEventsListView();
@@ -23,6 +24,17 @@ export default class TripEventsList {
     this._changeData = this._changeData.bind(this);
     this._changeMode = this._changeMode.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
+  }
+
+  renderView() {
+    if (this._points.length === 0) {
+      this._renderNoPoints();
+    } else {
+      this._renderSort();
+      // this._renderAdditionForm();
+      this._renderEventsList();
+      this._renderEvents();
+    }
   }
 
   _renderSort() {
@@ -43,6 +55,11 @@ export default class TripEventsList {
     listItemPresenter.renderListItem(point);
     this._listItemPresenter.set(point.id, listItemPresenter);
   }
+
+  // _renderAdditionForm() {
+  //   const addForm = new AddForm(this._tripEventsList, this._changeData);
+  //   addForm.renderAddForm();
+  // }
 
   _renderEvents() {
     this._points.forEach((point) => this._renderListItem(point));
@@ -89,15 +106,5 @@ export default class TripEventsList {
     }
 
     this._currentSortType = sortType;
-  }
-
-  renderView() {
-    if (this._points.length === 0) {
-      this._renderNoPoints();
-    } else {
-      this._renderSort();
-      this._renderEventsList();
-      this._renderEvents();
-    }
   }
 }

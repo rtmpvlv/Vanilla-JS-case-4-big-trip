@@ -1,19 +1,30 @@
+/* eslint-disable prefer-object-spread */
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
-import AbstractView from './abstract';
+import flatpickr from 'flatpickr';
+import SmartView from './smart';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
+import { generateOffers, generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
+const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
 const NEW_POINT_DEFAULT_INFO = {
   basePrice: 0,
-  destination: '',
+  destination: {
+    description: '',
+    name: 'To Heaven',
+    pictures: '',
+  },
   offers: '',
-  type: '',
+  type: 'Taxi',
 };
 
-const createAdditionFormTemplate = (tripPoint) => {
+const createAdditionFormTemplate = (data) => {
   const {
     basePrice, destination, offers, type,
-  } = tripPoint;
+  } = data;
 
   const dateNow = dayjs().format('DD/MM/YY HH:mm');
   const dateTheDayAfter = dayjs().add(1, 'day').format('DD/MM/YY HH:mm');
@@ -41,7 +52,7 @@ const createAdditionFormTemplate = (tripPoint) => {
     return optionSection;
   };
 
-  const renderPhotos = (photos) => (photos.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join(''));
+  const renderPhotos = (photos) => (photos ? photos.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('') : '');
 
   const createTypeListTemplate = (array) => (
     array.map((item) => `
@@ -123,13 +134,144 @@ const createAdditionFormTemplate = (tripPoint) => {
   `;
 };
 
-export default class AdditionForm extends AbstractView {
-  constructor(points = NEW_POINT_DEFAULT_INFO) {
+export default class AdditionForm extends SmartView {
+  constructor(point = NEW_POINT_DEFAULT_INFO) {
     super();
-    this._points = points;
+    this._data = AdditionForm.parseFormToData(point);
+    this._dateFromPicker = null;
+    this._editClickHandler = this._editClickHandler.bind(this);
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._typeChangeHandler = this._typeChangeHandler.bind(this);
+    this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._dueDateFromChangeHandler = this._dueDateFromChangeHandler.bind(this);
+    this._dueDateToChangeHandler = this._dueDateToChangeHandler.bind(this);
+    this._setInnerHandlers();
+    this._setDateFromDatepicker();
+    this._setDateToDatepicker();
   }
 
   getTemplate() {
-    return createAdditionFormTemplate(this._points);
+    return createAdditionFormTemplate(this._data);
+  }
+
+  restoreHandlers() {
+    this._setDateFromDatepicker();
+    this._setDateToDatepicker();
+    this._setInnerHandlers();
+    this.setEditClickHandler(this._callback.editClick);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+  }
+
+  reset(point) {
+    this.updateData(AdditionForm.parseFormToData(point));
+  }
+
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
+  }
+
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._editClickHandler);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit(AdditionForm.parseDataToForm(this._data));
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
+  }
+
+  static parseFormToData(point) {
+    return Object.assign({}, point);
+  }
+
+  static parseDataToForm(data) {
+    return Object.assign({}, data);
+  }
+
+  _typeChangeHandler(evt) {
+    evt.preventDefault();
+    if (PointTypes.includes(evt.target.innerText)) {
+      this.updateData({
+        type: evt.target.innerText,
+        offers: {
+          type: evt.target.innerText,
+          offers: generateOffers(),
+        },
+      });
+    }
+  }
+
+  _destinationChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      destination: {
+        name: evt.target.value,
+        description: generateDescription(),
+        pictures: generateLandscapePicsArray(),
+      },
+    });
+  }
+
+  _setInnerHandlers() {
+    this.getElement()
+      .querySelector('.event__type-group')
+      .addEventListener('click', this._typeChangeHandler);
+    this.getElement()
+      .querySelector('#event-destination-1')
+      .addEventListener('change', this._destinationChangeHandler);
+  }
+
+  _setDateFromDatepicker() {
+    if (this._dateFromPicker) {
+      this._dateFromPicker.destroy();
+      this._dateFromPicker = null;
+    }
+
+    this._dateFromPicker = flatpickr(
+      this.getElement().querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: DATE_PICKER_FORMAT,
+        defaultDate: this._data.dateFrom,
+        onChange: this._dueDateFromChangeHandler,
+      },
+    );
+  }
+
+  _dueDateFromChangeHandler(userDate) {
+    this.updateData({
+      dateFrom: userDate,
+    });
+  }
+
+  _setDateToDatepicker() {
+    if (this._dateToPicker) {
+      this._dateToPicker.destroy();
+      this._dateToPicker = null;
+    }
+
+    this._dateToPicker = flatpickr(
+      this.getElement().querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: DATE_PICKER_FORMAT,
+        defaultDate: this._data.dateTo,
+        onChange: this._dueDateToChangeHandler,
+      },
+    );
+  }
+
+  _dueDateToChangeHandler(userDate) {
+    this.updateData({
+      dateTo: userDate,
+    });
   }
 }

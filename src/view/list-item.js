@@ -24,7 +24,6 @@ const createTripItemTemplate = (tripPoint) => {
     </li>`).join('');
   };
 
-  const convertedDuration = convertDuration(duration);
   const extraOptionsTemplate = renderExtraOptions(offers.offers);
 
   return `
@@ -41,7 +40,7 @@ const createTripItemTemplate = (tripPoint) => {
               &mdash;
               <time class="event__end-time">${time2}</time>
             </p>
-            <p class="event__duration">${convertedDuration}</p>
+            <p class="event__duration">${convertDuration(duration)}</p>
           </div>
           <p class="event__price">
             &euro;&nbsp;<span class="event__price-value">${basePrice}</span>

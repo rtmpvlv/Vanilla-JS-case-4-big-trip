@@ -71,10 +71,17 @@ const generateDate = (daysBefore, daysAFter) => {
 };
 const isPast = (startTime) => dayjs().isAfter(startTime, 'D');
 const isFuture = (startTime) => dayjs().isBefore(startTime, 'D') || dayjs().isSame(startTime, 'D');
-const convertDuration = (runtime) => {
-  const mins = runtime % 60;
-  const hours = (runtime / 60).toFixed(0);
-  return `${hours}h ${mins}m`;
+const convertDuration = (minutes) => {
+  const mins = minutes % 60;
+  const hours = Math.floor(minutes / 60) % 24;
+  const days = Math.floor(minutes / 1440);
+  if (days >= 1) {
+    return `${days}d ${hours}h ${mins}m`;
+  }
+  if (hours >= 1) {
+    return `${hours}h ${mins}m`;
+  }
+  return `${mins}m`;
 };
 
 export const updateItem = (items, changedItem) => {
