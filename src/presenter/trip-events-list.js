@@ -3,7 +3,7 @@ import TripEventsListView from '../view/trips-event-list';
 import SortView from '../view/sort';
 import NoPointsView from '../view/no-trippoints';
 import TripEventsListItem from './trip-point';
-import { render } from '../utils/render';
+import { remove, render, replace } from '../utils/render';
 import { updateItem } from '../mock-data/utils-and-const';
 import SortType from '../utils/constants';
 import { sortPrice, sortDuration } from '../utils/task-utils';
@@ -88,6 +88,7 @@ export default class TripEventsList {
     if (this._currentSortType === sortType || !sortType) {
       return;
     }
+    this._sortViewRefresh();
     this._sortPoints(sortType);
     this._clearEventsList();
     this._renderEvents();
@@ -106,5 +107,13 @@ export default class TripEventsList {
     }
 
     this._currentSortType = sortType;
+  }
+
+  _sortViewRefresh() {
+    const previousSortView = this._sortView;
+    this._sortView = new SortView();
+    replace(this._sortView, previousSortView);
+    this._sortView.setSortTypeHandler(this._handleSortTypeChange);
+    remove(previousSortView);
   }
 }

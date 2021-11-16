@@ -137,8 +137,8 @@ export default class EditionForm extends SmartView {
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
-    this._dueDateFromChangeHandler = this._dueDateFromChangeHandler.bind(this);
-    this._dueDateToChangeHandler = this._dueDateToChangeHandler.bind(this);
+    this._dueDateFromChangeHandler = this._dateFromChangeHandler.bind(this);
+    this._dueDateToChangeHandler = this._dateToChangeHandler.bind(this);
     this._setInnerHandlers();
     this._setDateFromDatepicker();
     this._setDateToDatepicker();
@@ -234,12 +234,12 @@ export default class EditionForm extends SmartView {
         time_24hr: true,
         dateFormat: DATE_PICKER_FORMAT,
         defaultDate: this._data.dateFrom,
-        onChange: this._dueDateFromChangeHandler,
+        onChange: this._dateFromChangeHandler,
       },
     );
   }
 
-  _dueDateFromChangeHandler(userDate) {
+  _dateFromChangeHandler(userDate) {
     this.updateData({
       dateFrom: userDate,
       duration: dayjs(this._data.dateTo).diff(userDate, 'm'),
@@ -259,12 +259,12 @@ export default class EditionForm extends SmartView {
         time_24hr: true,
         dateFormat: DATE_PICKER_FORMAT,
         defaultDate: this._data.dateTo,
-        onChange: this._dueDateToChangeHandler,
+        onChange: this._dateToChangeHandler,
       },
     );
   }
 
-  _dueDateToChangeHandler(userDate) {
+  _dateToChangeHandler(userDate) {
     this.updateData({
       dateTo: userDate,
       duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
