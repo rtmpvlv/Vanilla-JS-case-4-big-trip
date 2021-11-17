@@ -32,6 +32,7 @@ const createEditionFormTemplate = (data) => {
         <span class="event__offer-price">${price}</span>
       </label>
       </div>`).join('');
+
     const optionSection = `
       <section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -42,7 +43,7 @@ const createEditionFormTemplate = (data) => {
     return optionSection;
   };
 
-  const renderPhotos = (photos) => (photos.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join(''));
+  const renderPhotos = (array) => (array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join(''));
 
   const createTypeListTemplate = (array) => (array.map((item) => `
       <div class="event__type-item">
@@ -132,16 +133,29 @@ export default class EditionForm extends SmartView {
   constructor(point) {
     super();
     this._data = EditionForm.parseFormToData(point);
+
     this._dateFromPicker = null;
+    this._dateToPicker = null;
+
     this._editClickHandler = this._editClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
-    this._dueDateFromChangeHandler = this._dateFromChangeHandler.bind(this);
-    this._dueDateToChangeHandler = this._dateToChangeHandler.bind(this);
-    this._setInnerHandlers();
+    this._priceChangeHandler = this._priceChangeHandler.bind(this);
+    this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
+    this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+
     this._setDateFromDatepicker();
     this._setDateToDatepicker();
+    this._setInnerHandlers();
+  }
+
+  static parseFormToData(point) {
+    return Object.assign({}, point);
+  }
+
+  static parseDataToForm(data) {
+    return Object.assign({}, data);
   }
 
   getTemplate() {
@@ -160,19 +174,9 @@ export default class EditionForm extends SmartView {
     this.updateData(EditionForm.parseFormToData(point));
   }
 
-  _editClickHandler(evt) {
-    evt.preventDefault();
-    this._callback.editClick();
-  }
-
   setEditClickHandler(callback) {
     this._callback.editClick = callback;
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editClickHandler);
-  }
-
-  _formSubmitHandler(evt) {
-    evt.preventDefault();
-    this._callback.formSubmit(EditionForm.parseDataToForm(this._data));
   }
 
   setFormSubmitHandler(callback) {
@@ -180,12 +184,14 @@ export default class EditionForm extends SmartView {
     this.getElement().querySelector('.event--edit').addEventListener('submit', this._formSubmitHandler);
   }
 
-  static parseFormToData(point) {
-    return Object.assign({}, point);
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  static parseDataToForm(data) {
-    return Object.assign({}, data);
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit(EditionForm.parseDataToForm(this._data));
   }
 
   _typeChangeHandler(evt) {
@@ -212,6 +218,13 @@ export default class EditionForm extends SmartView {
     });
   }
 
+  _priceChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      basePrice: evt.target.value,
+    }, true);
+  }
+
   _setInnerHandlers() {
     this.getElement()
       .querySelector('.event__type-group')
@@ -219,6 +232,9 @@ export default class EditionForm extends SmartView {
     this.getElement()
       .querySelector('#event-destination-1')
       .addEventListener('change', this._destinationChangeHandler);
+    this.getElement()
+      .querySelector('#event-price-1')
+      .addEventListener('change', this._priceChangeHandler);
   }
 
   _setDateFromDatepicker() {

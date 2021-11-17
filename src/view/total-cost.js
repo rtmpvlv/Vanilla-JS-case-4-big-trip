@@ -2,22 +2,20 @@
 import AbstractView from './abstract';
 
 const calcTotalPrice = (array) => {
-  let price = 0;
+  let sum = 0;
   array.forEach((element) => {
-    price += element.basePrice;
+    sum += element.basePrice;
   });
-  return price;
+  return sum;
 };
 
-const createTripPriceTemplate = (points) => (
-  `
+const createTripPriceTemplate = (points) => (`
       <p class="trip-info__cost">
         Total: &euro;&nbsp;<span class="trip-info__cost-value">${calcTotalPrice(points)}</span>
-      </p>
-  `
+      </p>`
 );
 
-export default class Price extends AbstractView {
+export default class TotalCost extends AbstractView {
   constructor(points) {
     super();
     this._points = points;

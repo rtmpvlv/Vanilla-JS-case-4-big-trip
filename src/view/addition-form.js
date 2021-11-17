@@ -3,14 +3,23 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
-import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { generateOffers, generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
+import {
+  PointTypes,
+  DestinationPoints,
+  getRandomInteger
+} from '../mock-data/utils-and-const';
+import {
+  generateOffers,
+  generateDescription,
+  generateLandscapePicsArray
+} from '../mock-data/mock-data';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
 const NEW_POINT_DEFAULT_INFO = {
+  id: getRandomInteger(1, 100000000),
   basePrice: 0,
   destination: {
     description: '',
@@ -42,6 +51,7 @@ const createAdditionFormTemplate = (data) => {
           <span class="event__offer-price">${price}</span>
         </label>
       </div>`).join('');
+
     const optionSection = `
       <section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -49,10 +59,11 @@ const createAdditionFormTemplate = (data) => {
           ${optionsList}
         </div>
       </section>`;
+
     return optionSection;
   };
 
-  const renderPhotos = (photos) => (photos ? photos.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('') : '');
+  const renderPhotos = (array) => (array ? array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('') : '');
 
   const createTypeListTemplate = (array) => (
     array.map((item) => `
@@ -138,16 +149,28 @@ export default class AdditionForm extends SmartView {
   constructor(point = NEW_POINT_DEFAULT_INFO) {
     super();
     this._data = AdditionForm.parseFormToData(point);
+
     this._dateFromPicker = null;
+    this._dateToPicker = null;
+
     this._editClickHandler = this._editClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
-    this._dueDateFromChangeHandler = this._dueDateFromChangeHandler.bind(this);
-    this._dueDateToChangeHandler = this._dueDateToChangeHandler.bind(this);
-    this._setInnerHandlers();
+    this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
+    this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+
     this._setDateFromDatepicker();
     this._setDateToDatepicker();
+    this._setInnerHandlers();
+  }
+
+  static parseFormToData(point) {
+    return Object.assign({}, point);
+  }
+
+  static parseDataToForm(data) {
+    return Object.assign({}, data);
   }
 
   getTemplate() {
@@ -166,19 +189,9 @@ export default class AdditionForm extends SmartView {
     this.updateData(AdditionForm.parseFormToData(point));
   }
 
-  _editClickHandler(evt) {
-    evt.preventDefault();
-    this._callback.editClick();
-  }
-
   setEditClickHandler(callback) {
     this._callback.editClick = callback;
     this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._editClickHandler);
-  }
-
-  _formSubmitHandler(evt) {
-    evt.preventDefault();
-    this._callback.formSubmit(AdditionForm.parseDataToForm(this._data));
   }
 
   setFormSubmitHandler(callback) {
@@ -186,12 +199,14 @@ export default class AdditionForm extends SmartView {
     this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
   }
 
-  static parseFormToData(point) {
-    return Object.assign({}, point);
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  static parseDataToForm(data) {
-    return Object.assign({}, data);
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit(AdditionForm.parseDataToForm(this._data));
   }
 
   _typeChangeHandler(evt) {
@@ -240,14 +255,15 @@ export default class AdditionForm extends SmartView {
         time_24hr: true,
         dateFormat: DATE_PICKER_FORMAT,
         defaultDate: this._data.dateFrom,
-        onChange: this._dueDateFromChangeHandler,
+        onChange: this._dateFromChangeHandler,
       },
     );
   }
 
-  _dueDateFromChangeHandler(userDate) {
+  _dateFromChangeHandler(userDate) {
     this.updateData({
       dateFrom: userDate,
+      duration: dayjs(this._data.dateTo).diff(userDate, 'm'),
     });
   }
 
@@ -264,14 +280,19 @@ export default class AdditionForm extends SmartView {
         time_24hr: true,
         dateFormat: DATE_PICKER_FORMAT,
         defaultDate: this._data.dateTo,
-        onChange: this._dueDateToChangeHandler,
+        onChange: this._dateToChangeHandler,
       },
     );
   }
 
-  _dueDateToChangeHandler(userDate) {
+  _dateToChangeHandler(userDate) {
     this.updateData({
       dateTo: userDate,
+      duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
     });
+  }
+
+  get id() {
+    return this._data.id;
   }
 }

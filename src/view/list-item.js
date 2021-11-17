@@ -8,10 +8,6 @@ const createTripItemTemplate = (tripPoint) => {
     basePrice, dateFrom, dateTo, destination, isFavorite, offers, type, duration,
   } = tripPoint;
 
-  const tripDate = dayjs(dateFrom).format('MMM D');
-  const time1 = dayjs(dateFrom).format('H:mm');
-  const time2 = dayjs(dateTo).format('H:mm');
-
   const renderExtraOptions = (array) => {
     if (!array || array.length === 0) {
       return '';
@@ -29,16 +25,16 @@ const createTripItemTemplate = (tripPoint) => {
   return `
       <li class="trip-events__item">
         <div class="event">
-          <time class="event__date">${tripDate}</time>
+          <time class="event__date">${dayjs(dateFrom).format('MMM D')}</time>
           <div class="event__type">
             <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
           </div>
           <h3 class="event__title">${type} ${destination.name}</h3>
           <div class="event__schedule">
             <p class="event__time">
-              <time class="event__start-time">${time1}</time>
+              <time class="event__start-time">${dayjs(dateFrom).format('H:mm')}</time>
               &mdash;
-              <time class="event__end-time">${time2}</time>
+              <time class="event__end-time">${dayjs(dateTo).format('H:mm')}</time>
             </p>
             <p class="event__duration">${convertDuration(duration)}</p>
           </div>
@@ -59,8 +55,7 @@ const createTripItemTemplate = (tripPoint) => {
             <span class="visually-hidden">Open event</span>
           </button>
         </div>
-      </li>
-    `;
+      </li>`;
 };
 
 export default class ListItem extends AbstractView {
@@ -75,16 +70,6 @@ export default class ListItem extends AbstractView {
     return createTripItemTemplate(this._points);
   }
 
-  _editClickHandler(evt) {
-    evt.preventDefault();
-    this._callback.editClick();
-  }
-
-  _favoriteClickHandler(evt) {
-    evt.preventDefault();
-    this._callback.favoriteClick();
-  }
-
   setEditClickHandler(callback) {
     this._callback.editClick = callback;
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editClickHandler);
@@ -93,5 +78,15 @@ export default class ListItem extends AbstractView {
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
     this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._favoriteClickHandler);
+  }
+
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
+  }
+
+  _favoriteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.favoriteClick();
   }
 }

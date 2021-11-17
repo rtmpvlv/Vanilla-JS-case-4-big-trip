@@ -45,8 +45,12 @@ export default class TripEventsListItem {
 
     if (this._mode === Mode.DEFAULT) {
       replace(this._listItemView, prevListItem);
-    } else if (this._mode === Mode.EDITING) {
+      return;
+    }
+
+    if (this._mode === Mode.EDITING) {
       replace(this._editFormView, prevEditFrom);
+      return;
     }
 
     remove(prevListItem);
@@ -56,7 +60,7 @@ export default class TripEventsListItem {
   _replaceListItemToForm() {
     replace(this._editFormView, this._listItemView);
     document.addEventListener('keydown', this._keyPressed);
-    this._changeMode();
+    this._changeMode(); // ?
     this._mode = Mode.EDITING;
   }
 
@@ -70,7 +74,6 @@ export default class TripEventsListItem {
   _keyPressed(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc' || evt.key === 'ArrowUp') {
       evt.preventDefault();
-      this._editFormView.reset(this._point);
       this._replaceFormToListItem();
       document.removeEventListener('keydown', this._keyPressed);
     }
