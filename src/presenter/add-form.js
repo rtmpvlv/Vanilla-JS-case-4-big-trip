@@ -1,35 +1,37 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable no-underscore-dangle */
-import AddFormView from '../view/addition-form';
-import {
-  render,
-  remove,
-  RenderPosition,
-  replace
-} from '../utils/render';
-import ListItem from '../view/list-item';
+import AddFormView from '../view/add-form';
+import { render, remove, RenderPosition } from '../utils/render';
+import { UserAction, UpdateType } from '../utils/constants';
+import { getRandomInteger } from '../mock-data/utils-and-const';
 
 export default class AddForm {
-  constructor(tripEventsList, changeData) {
-    this._tripEventsList = tripEventsList;
+  constructor(place, changeData) {
+    this._place = place;
     this._changeData = changeData;
 
-    this._listItemView = new ListItem();
+    this._addForm = null;
 
     this._keyPressed = this._keyPressed.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
   }
 
-  renderAddForm(point) {
-    this._point = point;
-    this._addFormView = new AddFormView(this._point);
-    this._addFormView.setFormSubmitHandler(this._handleFormSubmit);
+  renderAddForm() {
+    this._addForm = new AddFormView();
+    this._addForm.setFormSubmitHandler(this._handleFormSubmit);
+    this._addForm.setDeleteClickHandler(this._handleDeleteClick);
+    render(this._place, this._addForm, RenderPosition.AFTERBEGIN);
     document.addEventListener('keydown', this._keyPressed);
-    render(this._tripEventsList, this._addFormView, RenderPosition.AFTERBEGIN);
   }
 
-  get id() {
-    return this._addFormView.id;
+  destroy() {
+    if (this._addForm === null) {
+      return;
+    }
+    remove(this._addForm);
+    this._addForm = null;
+    document.removeEventListener('keydown', this._keyPressed);
   }
 
   _keyPressed(evt) {
@@ -40,18 +42,16 @@ export default class AddForm {
     }
   }
 
-  _destroy() {
-    remove(this._addFormView);
-  }
-
   _handleFormSubmit(point) {
-    this._changeData(point);
-    this._replaceFormToListItem();
+    this._changeData(
+      UserAction.ADD_POINT,
+      UpdateType.MINOR,
+      Object.assign({ id: getRandomInteger(1, 10000000) }, point),
+    );
+    this.destroy();
   }
 
-  _replaceFormToListItem() {
-    replace(this._listItemView, this._addFormView);
-    this._destroy();
-    document.removeEventListener('keydown', this._keyPressed);
+  _handleDeleteClick() {
+    this.destroy();
   }
 }

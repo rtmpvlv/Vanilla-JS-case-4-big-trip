@@ -3,53 +3,34 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
-import {
-  PointTypes,
-  DestinationPoints,
-  getRandomInteger
-} from '../mock-data/utils-and-const';
-import {
-  generateOffers,
-  generateDescription,
-  generateLandscapePicsArray
-} from '../mock-data/mock-data';
+import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
+import { generateOffers, generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
-const NEW_POINT_DEFAULT_INFO = {
-  id: getRandomInteger(1, 100000000),
-  basePrice: 0,
-  destination: {
-    description: '',
-    name: 'To Heaven',
-    pictures: '',
-  },
-  offers: '',
-  type: 'Taxi',
-};
-
-const createAdditionFormTemplate = (data) => {
+const createEditionFormTemplate = (data) => {
   const {
-    basePrice, destination, offers, type,
+    basePrice, dateFrom, dateTo, destination, offers, type,
   } = data;
 
-  const dateNow = dayjs().format('DD/MM/YY HH:mm');
-  const dateTheDayAfter = dayjs().add(1, 'day').format('DD/MM/YY HH:mm');
+  const date1 = dayjs(dateFrom).format('DD/MM/YY HH:mm');
+  const date2 = dayjs(dateTo).format('DD/MM/YY HH:mm');
 
   const renderExtraOptions = (array) => {
     if (!array || array.length === 0) {
       return '';
     }
+
     const optionsList = array.map(({ title, price }) => `
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
-        <label class="event__offer-label" for="event-offer-${title}-1">
-          <span class="event__offer-title">${title}</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">${price}</span>
-        </label>
+    <div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
+      <label class="event__offer-label" for="event-offer-${title}-1">
+        <span class="event__offer-title">${title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${price}</span>
+      </label>
       </div>`).join('');
 
     const optionSection = `
@@ -59,14 +40,12 @@ const createAdditionFormTemplate = (data) => {
           ${optionsList}
         </div>
       </section>`;
-
     return optionSection;
   };
 
-  const renderPhotos = (array) => (array ? array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('') : '');
+  const renderPhotos = (array) => (array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join(''));
 
-  const createTypeListTemplate = (array) => (
-    array.map((item) => `
+  const createTypeListTemplate = (array) => (array.map((item) => `
       <div class="event__type-item">
         <input id="event-type-${item.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}" ${item === type ? 'checked' : ''}>
         <label class="event__type-label  event__type-label--${item.toLowerCase()}" for="event-type-${item.toLowerCase()}-1">${item}</label>
@@ -76,8 +55,14 @@ const createAdditionFormTemplate = (data) => {
   const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
 
   const repeatingTemplate = createTypeListTemplate(PointTypes);
-  const extraOptionsTemplate = renderExtraOptions(offers.offers);
-  const photosTemplate = renderPhotos(destination.pictures);
+  let extraOptionsTemplate = '';
+  if (offers) {
+    extraOptionsTemplate = renderExtraOptions(offers.offers);
+  }
+  let photosTemplate = '';
+  if (destination.pictures) {
+    photosTemplate = renderPhotos(destination.pictures);
+  }
   const destinationList = createDestinationCities(DestinationPoints);
 
   return `
@@ -101,20 +86,20 @@ const createAdditionFormTemplate = (data) => {
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-              ${type}
+             ${type}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${destinationList}
+            ${destinationList}
             </datalist>
           </div>
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateNow}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${date1}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTheDayAfter}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${date2}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -122,17 +107,22 @@ const createAdditionFormTemplate = (data) => {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+            <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Cancel</button>
+          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__rollup-btn" type="button">
+            <span class="visually-hidden">Open event</span>
+          </button>
         </header>
         <section class="event__details">
           ${extraOptionsTemplate}
+
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${destination.description}</p>
+
             <div class="event__photos-container">
               <div class="event__photos-tape">
                 ${photosTemplate}
@@ -145,18 +135,20 @@ const createAdditionFormTemplate = (data) => {
   `;
 };
 
-export default class AdditionForm extends SmartView {
-  constructor(point = NEW_POINT_DEFAULT_INFO) {
+export default class EditionForm extends SmartView {
+  constructor(point) {
     super();
-    this._data = AdditionForm.parseFormToData(point);
+    this._data = EditionForm.parseFormToData(point);
 
     this._dateFromPicker = null;
     this._dateToPicker = null;
 
     this._editClickHandler = this._editClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
 
@@ -174,7 +166,21 @@ export default class AdditionForm extends SmartView {
   }
 
   getTemplate() {
-    return createAdditionFormTemplate(this._data);
+    return createEditionFormTemplate(this._data);
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._dateFromPicker) {
+      this._dateFromPicker.destroy();
+      this._dateFromPicker = null;
+    }
+
+    if (this._dateToPicker) {
+      this._dateToPicker.destroy();
+      this._dateToPicker = null;
+    }
   }
 
   restoreHandlers() {
@@ -183,20 +189,26 @@ export default class AdditionForm extends SmartView {
     this._setInnerHandlers();
     this.setEditClickHandler(this._callback.editClick);
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   reset(point) {
-    this.updateData(AdditionForm.parseFormToData(point));
+    this.updateData(EditionForm.parseFormToData(point));
   }
 
   setEditClickHandler(callback) {
     this._callback.editClick = callback;
-    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._editClickHandler);
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editClickHandler);
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
-    this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
+    this.getElement().querySelector('.event--edit').addEventListener('submit', this._formSubmitHandler);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._formDeleteClickHandler);
   }
 
   _editClickHandler(evt) {
@@ -206,7 +218,12 @@ export default class AdditionForm extends SmartView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(AdditionForm.parseDataToForm(this._data));
+    this._callback.formSubmit(EditionForm.parseDataToForm(this._data));
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(EditionForm.parseDataToForm(this._data));
   }
 
   _typeChangeHandler(evt) {
@@ -233,6 +250,13 @@ export default class AdditionForm extends SmartView {
     });
   }
 
+  _priceChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      basePrice: evt.target.value,
+    }, true);
+  }
+
   _setInnerHandlers() {
     this.getElement()
       .querySelector('.event__type-group')
@@ -240,6 +264,9 @@ export default class AdditionForm extends SmartView {
     this.getElement()
       .querySelector('#event-destination-1')
       .addEventListener('change', this._destinationChangeHandler);
+    this.getElement()
+      .querySelector('#event-price-1')
+      .addEventListener('change', this._priceChangeHandler);
   }
 
   _setDateFromDatepicker() {
@@ -290,9 +317,5 @@ export default class AdditionForm extends SmartView {
       dateTo: userDate,
       duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
     });
-  }
-
-  get id() {
-    return this._data.id;
   }
 }

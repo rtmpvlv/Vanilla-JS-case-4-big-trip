@@ -1,8 +1,10 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable no-underscore-dangle */
-import EditFormView from '../view/edition-form';
+import EditFormView from '../view/edit-form';
 import ListItemView from '../view/list-item';
 import { render, replace, remove } from '../utils/render';
+import { UserAction, UpdateType } from '../utils/constants';
+import { isDateEquial } from '../utils/point';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -24,6 +26,7 @@ export default class TripEventsListItem {
     this._keyPressed = this._keyPressed.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
   }
 
   renderListItem(point) {
@@ -37,6 +40,7 @@ export default class TripEventsListItem {
     this._listItemView.setFavoriteClickHandler(this._handleFavoriteClick);
     this._editFormView.setEditClickHandler(this._replaceFormToListItem);
     this._editFormView.setFormSubmitHandler(this._handleFormSubmit);
+    this._editFormView.setDeleteClickHandler(this._handleDeleteClick);
 
     if (prevListItem === null || prevEditFrom === null) {
       render(this._tripEventsList, this._listItemView);
@@ -92,6 +96,8 @@ export default class TripEventsListItem {
 
   _handleFavoriteClick() {
     this._changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
       Object.assign(
         {},
         this._point,
@@ -102,8 +108,24 @@ export default class TripEventsListItem {
     );
   }
 
-  _handleFormSubmit(point) {
-    this._changeData(point);
+  _handleFormSubmit(update) {
+    const isMinorUpdate = !isDateEquial(this._point.dateTo, update.dateTo)
+    || !isDateEquial(this._point.dateFrom, update.dateFrom)
+    || this._point.basePrice !== update.basePrice;
+
+    this._changeData(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
     this._replaceFormToListItem();
+  }
+
+  _handleDeleteClick(point) {
+    this._changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
   }
 }
