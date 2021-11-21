@@ -31,7 +31,7 @@ const createEditionFormTemplate = (data) => {
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>
       </label>
-      </div>`).join('');
+    </div>`).join('');
 
     const optionSection = `
       <section class="event__section  event__section--offers">
@@ -43,7 +43,12 @@ const createEditionFormTemplate = (data) => {
     return optionSection;
   };
 
-  const renderPhotos = (array) => (array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join(''));
+  const renderPhotos = (array) => {
+    if (!array || array.length === 0) {
+      return '';
+    }
+    return array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('');
+  };
 
   const createTypeListTemplate = (array) => (array.map((item) => `
       <div class="event__type-item">
@@ -55,14 +60,8 @@ const createEditionFormTemplate = (data) => {
   const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
 
   const repeatingTemplate = createTypeListTemplate(PointTypes);
-  let extraOptionsTemplate = '';
-  if (offers) {
-    extraOptionsTemplate = renderExtraOptions(offers.offers);
-  }
-  let photosTemplate = '';
-  if (destination.pictures) {
-    photosTemplate = renderPhotos(destination.pictures);
-  }
+  const extraOptionsTemplate = renderExtraOptions(offers.offers);
+  const photosTemplate = renderPhotos(destination.pictures);
   const destinationList = createDestinationCities(DestinationPoints);
 
   return `
@@ -253,7 +252,7 @@ export default class EditionForm extends SmartView {
   _priceChangeHandler(evt) {
     evt.preventDefault();
     this.updateData({
-      basePrice: evt.target.value,
+      basePrice: Number(evt.target.value),
     }, true);
   }
 

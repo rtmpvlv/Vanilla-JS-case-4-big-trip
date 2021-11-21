@@ -1,12 +1,11 @@
-import PathInfoView from './view/path-info';
-import TotalCostView from './view/total-cost';
 import MenuView from './view/menu';
 import { getTripPointInfo } from './mock-data/mock-data';
-import { render, RenderPosition } from './utils/render';
+import { render } from './utils/render';
 import ListPresenter from './presenter/list';
 import FilterPresenter from './presenter/filter';
 import PointModel from './model/points';
 import FilterModel from './model/filter';
+import TripInfo from './presenter/trip-info';
 
 const POINTS_COUNT = 15;
 const tripPoints = new Array(POINTS_COUNT).fill().map(getTripPointInfo);
@@ -24,13 +23,10 @@ const listPresenter = new ListPresenter(mainTripEventsSection, pointModel, filte
 const filterPresenter = new FilterPresenter(headerMenuFilters, pointModel, filterModel);
 listPresenter.renderView();
 filterPresenter.init();
+const tripInfopresenter = new TripInfo(header, pointModel);
+tripInfopresenter.init();
 
 render(headerMenuNavigation, new MenuView());
-if (tripPoints.length > 0) {
-  render(header, new PathInfoView(tripPoints), RenderPosition.AFTERBEGIN);
-  const tripInformation = header.querySelector('.trip-main__trip-info');
-  render(tripInformation, new TotalCostView(tripPoints));
-}
 
 document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
   evt.preventDefault();

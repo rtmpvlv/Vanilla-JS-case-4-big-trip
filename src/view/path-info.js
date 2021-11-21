@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import dayjs from 'dayjs';
+import { sortDate, sortDateTo } from '../utils/sort-utils';
 import AbstractView from './abstract';
 
 const renderTripPoints = (array) => {
@@ -7,7 +8,19 @@ const renderTripPoints = (array) => {
   return Array.from(uniquePoint).join('&nbsp;&mdash;&nbsp;');
 };
 
-const renderDateInformation = ((array) => `${dayjs(array[0].dateFrom).format('DD MMM')}&nbsp;&mdash;&nbsp;${dayjs(array[array.length - 1].dateTo).format('DD MMM')}`);
+const renderDateInformation = ((array) => {
+  const earliestDateFrom = array.sort(sortDate)[0];
+  const latestDateTo = array.sort(sortDateTo)[0];
+  return `${dayjs(earliestDateFrom.dateFrom).format('DD MMM')}&nbsp;&mdash;&nbsp;${dayjs(latestDateTo.dateTo).format('DD MMM')}`;
+});
+
+const calcTotalPrice = (array) => {
+  let sum = 0;
+  array.forEach((element) => {
+    sum += element.basePrice;
+  });
+  return sum;
+};
 
 const createTripInformationTemplate = (points) => (`
     <section class="trip-main__trip-info  trip-info">
@@ -15,6 +28,9 @@ const createTripInformationTemplate = (points) => (`
       <h1 class="trip-info__title">${renderTripPoints(points)}</h1>
         <p class="trip-info__dates">${renderDateInformation(points)}</p>
       </div>
+      <p class="trip-info__cost">
+        Total: &euro;&nbsp;<span class="trip-info__cost-value">${calcTotalPrice(points)}</span>
+      </p>
     </section>`
 );
 
