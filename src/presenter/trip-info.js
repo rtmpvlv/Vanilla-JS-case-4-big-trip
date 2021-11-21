@@ -21,7 +21,7 @@ export default class TripInfo {
     this._pointModel.addObserver(this._handleModelEvent);
   }
 
-  init() {
+  render() {
     this._points = this._pointModel.getPoints();
     const prevPathInfoPresenter = this._pathInfoPresenter;
     const prevTotalCostPresenter = this._totalCostPresenter;
@@ -38,6 +38,6 @@ export default class TripInfo {
   }
 
   _handleModelEvent() {
-    this.init();
+    this.render();
   }
 }

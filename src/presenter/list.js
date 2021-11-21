@@ -99,7 +99,7 @@ export default class TripEventsList {
 
   _renderNoPoints() {
     this._noPointsView = new NoPointsView(this._filterType);
-    render(this._tripEventsList, this._noPointsView, RenderPosition.AFTERBEGIN);
+    render(this._tripEventsSection, this._noPointsView);
   }
 
   _clearEventsList() {

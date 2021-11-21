@@ -12,8 +12,7 @@ const createTripFiltersTemplate = ((filter, currentType) => {
   <form class="trip-filters" action="#" method="get">
     ${filterItemTemplate}
     <button class="visually-hidden" type="submit">Accept filter</button>
-  </form>
-  `;
+  </form>`;
 });
 
 export default class Filter extends AbstractView {

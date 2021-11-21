@@ -16,15 +16,17 @@ const headerMenuFilters = header.querySelector('.trip-controls__filters');
 const mainTripEventsSection = document.querySelector('.trip-events');
 
 const pointModel = new PointModel();
-pointModel.setPoints(tripPoints);
 const filterModel = new FilterModel();
-
-const listPresenter = new ListPresenter(mainTripEventsSection, pointModel, filterModel);
-const filterPresenter = new FilterPresenter(headerMenuFilters, pointModel, filterModel);
-listPresenter.renderView();
-filterPresenter.init();
 const tripInfopresenter = new TripInfo(header, pointModel);
-tripInfopresenter.init();
+const filterPresenter = new FilterPresenter(headerMenuFilters, pointModel, filterModel);
+const listPresenter = new ListPresenter(mainTripEventsSection, pointModel, filterModel);
+
+pointModel.setPoints(tripPoints);
+if (pointModel.getPoints().length > 0) {
+  tripInfopresenter.render();
+}
+filterPresenter.init();
+listPresenter.renderView();
 
 render(headerMenuNavigation, new MenuView());
 
