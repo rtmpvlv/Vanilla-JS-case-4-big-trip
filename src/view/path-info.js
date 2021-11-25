@@ -6,7 +6,7 @@ import AbstractView from './abstract';
 const renderTripPoints = (array) => {
   array.sort(sortDate);
   if (array.length < 4) {
-    Array.from(new Set(array.map(({ destination }) => destination.name))).join('&nbsp;&mdash;&nbsp;');
+    return Array.from(new Set(array.map(({ destination }) => destination.name))).join('&nbsp;&mdash;&nbsp;');
   }
   return `${array[0].destination.name} — ... — ${array[array.length - 1].destination.name}`;
 };

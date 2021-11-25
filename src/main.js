@@ -1,6 +1,6 @@
 import { getTripPointInfo } from './mock-data/mock-data';
 import MenuView from './view/menu';
-import StatsView from './view/stats';
+import StatsPresenter from './presenter/stats';
 import ListPresenter from './presenter/list';
 import FilterPresenter from './presenter/filter';
 import TripInfo from './presenter/trip-info';
@@ -29,7 +29,7 @@ pointModel.setPoints(tripPoints);
 const filterModel = new FilterModel();
 const tripInfoPresenter = new TripInfo(header, pointModel);
 const menuView = new MenuView();
-const statsView = new StatsView(pointModel.getPoints());
+const statsPresenter = new StatsPresenter(pageBodyContainer, pointModel);
 const filterPresenter = new FilterPresenter(headerMenuFilters, pointModel, filterModel);
 const buttonPresenter = new ButtonPresenter(header, handleButtonClick);
 const listPresenter = new ListPresenter(
@@ -40,7 +40,7 @@ const listPresenter = new ListPresenter(
 );
 
 function handleButtonClick() {
-  statsView.hide();
+  statsPresenter.destroy();
   menuView.setTableLinkActive();
   listPresenter.openAddForm();
   listPresenter.show();
@@ -52,13 +52,12 @@ if (pointModel.getPoints().length > 0) {
 }
 buttonPresenter.renderButton();
 render(headerMenuNavigation, menuView);
-render(pageBodyContainer, statsView);
-statsView.hide();
+statsPresenter.destroy();
 
 const handleSiteMenuClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
-      statsView.hide();
+      statsPresenter.destroy();
       listPresenter.changeMode();
       listPresenter.handleSortTypeChange(SortType.DAY);
       listPresenter.show();
@@ -68,7 +67,7 @@ const handleSiteMenuClick = (menuItem) => {
       break;
     case MenuItem.STATS:
       listPresenter.hide();
-      statsView.show();
+      statsPresenter.render();
       buttonPresenter.isDisabled();
       filterPresenter.isDisabled();
       break;

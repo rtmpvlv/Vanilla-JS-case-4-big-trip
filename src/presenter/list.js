@@ -74,11 +74,11 @@ export default class TripEventsList {
     const filteredPoints = filter[this._filterType](points);
     switch (this._currentSortType) {
       case SortType.DAY:
-        return filteredPoints.sort(sortDate);
+        return filteredPoints.slice().sort(sortDate);
       case SortType.TIME:
-        return filteredPoints.sort(sortDuration);
+        return filteredPoints.slice().sort(sortDuration);
       case SortType.PRICE:
-        return filteredPoints.sort(sortPrice);
+        return filteredPoints.slice().sort(sortPrice);
       default:
         throw new Error('Unexpected sort type.');
     }
@@ -138,7 +138,7 @@ export default class TripEventsList {
         this._pointModel.deletePoint(updateType, update);
         break;
       default:
-        throw new Error('Unexpected user action.');
+        throw new Error('Unexpected user\'s action.');
     }
   }
 

@@ -240,14 +240,6 @@ export default class Stats extends SmartView {
     }
   }
 
-  hide() {
-    this._element.classList.add('visually-hidden');
-  }
-
-  show() {
-    this._element.classList.remove('visually-hidden');
-  }
-
   _setCharts() {
     if (this._moneyChart !== null || this._typeChart !== null || this._timeChart !== null) {
       this._moneyChart = null;
