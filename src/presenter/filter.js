@@ -21,10 +21,13 @@ export default class Filter {
   }
 
   init() {
-    const filters = this._getFilters();
     const prevFilterComponent = this._filterComponent;
 
-    this._filterComponent = new FilterView(filters, this._filterModel.getFilter());
+    this._filterComponent = new FilterView(
+      this._getFilters(),
+      this._filterModel.getFilter(),
+      false,
+    );
     this._filterComponent.setFilterTypeChangeHandler(this._handleFilterTypeChange);
 
     if (prevFilterComponent === null) {
@@ -32,6 +35,17 @@ export default class Filter {
       return;
     }
 
+    replace(this._filterComponent, prevFilterComponent);
+    remove(prevFilterComponent);
+  }
+
+  isDisabled() {
+    const prevFilterComponent = this._filterComponent;
+    this._filterComponent = new FilterView(this._getFilters(), this._filterModel.getFilter(), true);
+    if (prevFilterComponent === null) {
+      render(this._filterContainer, this._filterComponent);
+      return;
+    }
     replace(this._filterComponent, prevFilterComponent);
     remove(prevFilterComponent);
   }

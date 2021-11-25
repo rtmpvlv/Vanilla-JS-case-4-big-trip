@@ -16,10 +16,11 @@ import { sortPrice, sortDate, sortDuration } from '../utils/sort-utils';
 import filter from '../utils/filter';
 
 export default class TripEventsList {
-  constructor(place, pointModel, filterModel) {
+  constructor(place, pointModel, filterModel, buttonPresenter) {
     this._tripEventsSection = place;
     this._pointModel = pointModel;
     this._filterModel = filterModel;
+    this._buttonPresenter = buttonPresenter;
     this._filterType = FilterType.EVERYTHING;
     this._currentSortType = SortType.DAY;
 
@@ -30,13 +31,17 @@ export default class TripEventsList {
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
-    this._changeMode = this._changeMode.bind(this);
-    this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
+    this.changeMode = this.changeMode.bind(this);
+    this.handleSortTypeChange = this.handleSortTypeChange.bind(this);
 
     this._pointModel.addObserver(this._handleModelEvent);
     this._filterModel.addObserver(this._handleModelEvent);
 
-    this._addFormPresenter = new AddFormPresenter(this._tripEventsList, this._handleViewAction);
+    this._addFormPresenter = new AddFormPresenter(
+      this._tripEventsList,
+      this._handleViewAction,
+      this._buttonPresenter,
+    );
   }
 
   renderView() {
@@ -49,10 +54,18 @@ export default class TripEventsList {
     this._renderEvents();
   }
 
-  createPoint() {
+  openAddForm() {
     this._currentSortType = SortType.DAY;
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this._addFormPresenter.renderAddForm();
+  }
+
+  hide() {
+    this._tripEventsSection.classList.add('visually-hidden');
+  }
+
+  show() {
+    this._tripEventsSection.classList.remove('visually-hidden');
   }
 
   _getPoints() {
@@ -66,8 +79,9 @@ export default class TripEventsList {
         return filteredPoints.sort(sortDuration);
       case SortType.PRICE:
         return filteredPoints.sort(sortPrice);
+      default:
+        throw new Error('Unexpected sort type.');
     }
-    return filteredPoints;
   }
 
   _renderSort() {
@@ -75,7 +89,7 @@ export default class TripEventsList {
       this._sortView = null;
     }
     this._sortView = new SortView(this._currentSortType);
-    this._sortView.setSortTypeHandler(this._handleSortTypeChange);
+    this._sortView.setSortTypeHandler(this.handleSortTypeChange);
     render(this._tripEventsSection, this._sortView, RenderPosition.AFTERBEGIN);
   }
 
@@ -91,7 +105,7 @@ export default class TripEventsList {
     const listItemPresenter = new ListItem(
       this._tripEventsList,
       this._handleViewAction,
-      this._changeMode,
+      this.changeMode,
     );
     listItemPresenter.renderListItem(point);
     this._listItemPresenter.set(point.id, listItemPresenter);
@@ -123,6 +137,8 @@ export default class TripEventsList {
       case UserAction.DELETE_POINT:
         this._pointModel.deletePoint(updateType, update);
         break;
+      default:
+        throw new Error('Unexpected user action.');
     }
   }
 
@@ -139,15 +155,17 @@ export default class TripEventsList {
         this._clearEventsList();
         this.renderView();
         break;
+      default:
+        throw new Error('Unexpected update type.');
     }
   }
 
-  _changeMode() {
+  changeMode() {
     this._addFormPresenter.destroy();
     this._listItemPresenter.forEach((presenter) => presenter.resetView());
   }
 
-  _handleSortTypeChange(sortType) {
+  handleSortTypeChange(sortType) {
     if (this._currentSortType === sortType) {
       return;
     }

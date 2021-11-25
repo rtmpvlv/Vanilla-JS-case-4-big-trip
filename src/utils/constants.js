@@ -21,3 +21,22 @@ export const FilterType = {
   FUTURE: 'future',
   PAST: 'past',
 };
+
+export const MenuItem = {
+  ADD: 'Add',
+  TABLE: 'Table',
+  STATS: 'Stats',
+};
+
+export const PointTypes = [
+  'Taxi',
+  'Bus',
+  'Train',
+  'Ship',
+  'Transport',
+  'Drive',
+  'Flight',
+  'Check-in',
+  'Sightseeing',
+  'Restaurant',
+];

@@ -4,8 +4,11 @@ import { sortDate, sortDateTo } from '../utils/sort-utils';
 import AbstractView from './abstract';
 
 const renderTripPoints = (array) => {
-  const uniquePoint = new Set(array.map(({ destination }) => destination.name));
-  return Array.from(uniquePoint).join('&nbsp;&mdash;&nbsp;');
+  array.sort(sortDate);
+  if (array.length < 4) {
+    Array.from(new Set(array.map(({ destination }) => destination.name))).join('&nbsp;&mdash;&nbsp;');
+  }
+  return `${array[0].destination.name} — ... — ${array[array.length - 1].destination.name}`;
 };
 
 const renderDateInformation = ((array) => {

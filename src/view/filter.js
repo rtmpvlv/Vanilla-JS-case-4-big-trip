@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import AbstractView from './abstract';
 
-const createTripFiltersTemplate = ((filter, currentType) => {
+const createTripFiltersTemplate = ((filter, currentType, isDisabled) => {
   const filterItemTemplate = filter.map(({ type, name, count }) => `
   <div class="trip-filters__filter">
-     <input id="filter-${name}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${type}" ${type === currentType ? 'checked' : ''}>
+     <input id="filter-${name}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${type}" ${type === currentType ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
      <label class="trip-filters__filter-label" for="filter-${name}">${name} ${count}</label>
   </div>`).join('');
 
@@ -16,16 +16,17 @@ const createTripFiltersTemplate = ((filter, currentType) => {
 });
 
 export default class Filter extends AbstractView {
-  constructor(filters, currentType) {
+  constructor(filters, currentType, disability) {
     super();
     this._filters = filters;
     this._currentType = currentType;
+    this._isDisabled = disability;
 
     this._filterTypeChangeHandler = this._filterTypeChangeHandler.bind(this);
   }
 
   getTemplate() {
-    return createTripFiltersTemplate(this._filters, this._currentType);
+    return createTripFiltersTemplate(this._filters, this._currentType, this._isDisabled);
   }
 
   _filterTypeChangeHandler(evt) {
