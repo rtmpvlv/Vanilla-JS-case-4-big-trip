@@ -2,23 +2,42 @@ export const sortDate = (point1, point2) => new Date(point1.dateFrom) - new Date
 export const sortDateTo = (point1, point2) => new Date(point2.dateTo) - new Date(point1.dateTo);
 export const sortPrice = (point1, point2) => point2.basePrice - point1.basePrice;
 export const sortDuration = (point1, point2) => point2.duration - point1.duration;
+
 export const sortTypesForCosts = (points) => {
-  const types = Array.from(new Set(points.map((point) => point.type)));
-  const sortedPoints = types
+  let types = Array.from(new Set(points.map((point) => point.type)));
+  let sortedPoints = types
     .map((type) => points.filter((point) => point.type === type))
-    .map((elements) => elements.reduce((sum, current) => sum + current.basePrice, 0))
-    .sort((a, b) => b - a);
+    .map((elements) => elements.reduce((sum, current) => sum + current.basePrice, 0));
+
+  const arr = [];
+  for (let i = 0; i < types.length; i += 1) {
+    arr.push([types[i], sortedPoints[i]]);
+  }
+  arr.sort((a, b) => b[1] - a[1]);
+
+  types = arr.map((item) => item[0].toUpperCase());
+  sortedPoints = arr.map((item) => item[1]);
+
   return [
     types,
     sortedPoints,
   ];
 };
 export const sortPointsForTypes = (points) => {
-  const types = Array.from(new Set(points.map((point) => point.type)));
-  const sortedPoints = types
+  let types = Array.from(new Set(points.map((point) => point.type)));
+  let sortedPoints = types
     .map((type) => points.filter((point) => point.type === type))
-    .map((element) => element.length)
-    .sort((a, b) => b - a);
+    .map((element) => element.length);
+
+  const arr = [];
+  for (let i = 0; i < types.length; i += 1) {
+    arr.push([types[i], sortedPoints[i]]);
+  }
+  arr.sort((a, b) => b[1] - a[1]);
+
+  types = arr.map((item) => item[0].toUpperCase());
+  sortedPoints = arr.map((item) => item[1]);
+
   return [
     types,
     sortedPoints,
@@ -26,11 +45,20 @@ export const sortPointsForTypes = (points) => {
 };
 
 export const sortTypesForDuration = (points) => {
-  const types = Array.from(new Set(points.map((point) => point.type)));
-  const sortedPoints = types
+  let types = Array.from(new Set(points.map((point) => point.type)));
+  let sortedPoints = types
     .map((type) => points.filter((point) => point.type === type))
-    .map((elements) => elements.reduce((sum, current) => sum + current.duration, 0))
-    .sort((a, b) => b - a);
+    .map((elements) => elements.reduce((sum, current) => sum + current.duration, 0));
+
+  const arr = [];
+  for (let i = 0; i < types.length; i += 1) {
+    arr.push([types[i], sortedPoints[i]]);
+  }
+  arr.sort((a, b) => b[1] - a[1]);
+
+  types = arr.map((item) => item[0].toUpperCase());
+  sortedPoints = arr.map((item) => item[1]);
+
   return [
     types,
     sortedPoints,

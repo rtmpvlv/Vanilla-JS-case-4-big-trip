@@ -1,3 +1,4 @@
+/* eslint-disable prefer-object-spread */
 import dayjs from 'dayjs';
 
 import {
@@ -35,27 +36,34 @@ const generateDestionationInfo = () => ({
   pictures: generateLandscapePicsArray(),
 });
 
-export const generateOffers = () => {
-  const arr = [];
-  for (let i = 0; i < getRandomInteger(0, 5); i += 1) {
-    arr.push({
-      title: getRandomArrayElement(ExtraOptions),
-      price: getRandomInteger(10, 100),
-    });
-  }
-  return arr;
+export const getOffers = () => {
+  const generateOffers = () => {
+    const arr = [];
+    for (let i = 0; i < getRandomInteger(0, 5); i += 1) {
+      arr.push({
+        title: getRandomArrayElement(ExtraOptions),
+        price: getRandomInteger(10, 100),
+      });
+    }
+    return arr;
+  };
+
+  const generateOfferInfo = (typesArray) => typesArray
+    .map((item) => ({
+      type: item,
+      offers: generateOffers(),
+    }));
+
+  return generateOfferInfo(PointTypes);
 };
+
+export const offers = getOffers();
 
 export const getTripPointInfo = () => {
   const dateFrom = generateDate(7, 7);
   const dateTo = generateDate(0, 10);
   const duration = dayjs(dateTo).diff(dateFrom, 'm');
   const type = getRandomArrayElement(PointTypes);
-
-  const generateOfferInfo = () => ({
-    type,
-    offers: generateOffers(),
-  });
 
   return {
     basePrice: getRandomInteger(100, 1000),
@@ -64,8 +72,8 @@ export const getTripPointInfo = () => {
     destination: generateDestionationInfo(),
     id: getRandomInteger(1, 100000000),
     isFavorite: Boolean(getRandomInteger(0, 1)),
-    offers: generateOfferInfo(),
     type,
     duration,
+    offers: offers.find((item) => item.type === type).offers,
   };
 };

@@ -16,11 +16,15 @@ import { sortPrice, sortDate, sortDuration } from '../utils/sort-utils';
 import filter from '../utils/filter';
 
 export default class TripEventsList {
-  constructor(place, pointModel, filterModel, buttonPresenter) {
+  constructor(place, pointModel, filterModel, buttonPresenter, offersModel) {
     this._tripEventsSection = place;
     this._pointModel = pointModel;
+
     this._filterModel = filterModel;
     this._buttonPresenter = buttonPresenter;
+    this._offersModel = offersModel;
+    this._offers = this._offersModel.getOffers();
+
     this._filterType = FilterType.EVERYTHING;
     this._currentSortType = SortType.DAY;
 
@@ -41,6 +45,7 @@ export default class TripEventsList {
       this._tripEventsList,
       this._handleViewAction,
       this._buttonPresenter,
+      this._offers,
     );
   }
 
@@ -106,6 +111,7 @@ export default class TripEventsList {
       this._tripEventsList,
       this._handleViewAction,
       this.changeMode,
+      this._offers,
     );
     listItemPresenter.renderListItem(point);
     this._listItemPresenter.set(point.id, listItemPresenter);

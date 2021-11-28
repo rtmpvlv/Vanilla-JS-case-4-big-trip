@@ -1,4 +1,4 @@
-import { getTripPointInfo } from './mock-data/mock-data';
+import { getTripPointInfo as getPointInfo, offers } from './mock-data/mock-data';
 import MenuView from './view/menu';
 import StatsPresenter from './presenter/stats';
 import ListPresenter from './presenter/list';
@@ -6,6 +6,7 @@ import FilterPresenter from './presenter/filter';
 import TripInfo from './presenter/trip-info';
 import PointModel from './model/points';
 import FilterModel from './model/filter';
+import OffersModel from './model/offers';
 import { render } from './utils/render';
 import {
   MenuItem,
@@ -15,8 +16,8 @@ import {
 } from './utils/constants';
 import ButtonPresenter from './presenter/button';
 
-const POINTS_COUNT = 15;
-const tripPoints = new Array(POINTS_COUNT).fill().map(getTripPointInfo);
+const POINTS_COUNT = 20;
+const points = new Array(POINTS_COUNT).fill(null).map(getPointInfo);
 
 const header = document.querySelector('.trip-main');
 const headerMenuNavigation = header.querySelector('.trip-controls__navigation');
@@ -25,8 +26,13 @@ const pageBodyContainer = document.querySelector('#body-container');
 const mainTripEventsSection = document.querySelector('.trip-events');
 
 const pointModel = new PointModel();
-pointModel.setPoints(tripPoints);
+pointModel.setPoints(points);
+
 const filterModel = new FilterModel();
+
+const offersModel = new OffersModel();
+offersModel.setOffers(offers);
+
 const tripInfoPresenter = new TripInfo(header, pointModel);
 const menuView = new MenuView();
 const statsPresenter = new StatsPresenter(pageBodyContainer, pointModel);
@@ -37,6 +43,7 @@ const listPresenter = new ListPresenter(
   pointModel,
   filterModel,
   buttonPresenter,
+  offersModel,
 );
 
 function handleButtonClick() {
@@ -83,5 +90,4 @@ listPresenter.renderView();
 export default POINTS_COUNT;
 
 // Не отрабатывает кнопка Добавить на пустом листе
-// Нет возможности выбора офферов
 // Дата окончания может быть меньше даты начала события. 49

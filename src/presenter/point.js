@@ -4,7 +4,6 @@ import EditFormView from '../view/edit-form';
 import ListItemView from '../view/list-item';
 import { render, replace, remove } from '../utils/render';
 import { UserAction, UpdateType } from '../utils/constants';
-import { isDateEquial } from '../utils/point';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -12,10 +11,11 @@ const Mode = {
 };
 
 export default class TripEventsListItem {
-  constructor(tripEventsList, changeData, changeMode) {
+  constructor(tripEventsList, changeData, changeMode, offers) {
     this._tripEventsList = tripEventsList;
     this._changeData = changeData;
     this._changeMode = changeMode;
+    this._offers = offers;
 
     this._listItemView = null;
     this._editFormView = null;
@@ -34,7 +34,7 @@ export default class TripEventsListItem {
     const prevListItem = this._listItemView;
     const prevEditFrom = this._editFormView;
     this._listItemView = new ListItemView(this._point);
-    this._editFormView = new EditFormView(this._point);
+    this._editFormView = new EditFormView(this._offers, this._point);
 
     this._listItemView.setEditClickHandler(this._replaceListItemToForm);
     this._listItemView.setFavoriteClickHandler(this._handleFavoriteClick);
@@ -109,13 +109,9 @@ export default class TripEventsListItem {
   }
 
   _handleFormSubmit(update) {
-    const isMinorUpdate = !isDateEquial(this._point.dateTo, update.dateTo)
-    || !isDateEquial(this._point.dateFrom, update.dateFrom)
-    || this._point.basePrice !== update.basePrice;
-
     this._changeData(
       UserAction.UPDATE_POINT,
-      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      UpdateType.MINOR,
       update,
     );
     this._replaceFormToListItem();

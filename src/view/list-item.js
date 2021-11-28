@@ -3,10 +3,10 @@ import dayjs from 'dayjs';
 import convertDuration from '../utils/format-utils';
 import AbstractView from './abstract';
 
-const createTripItemTemplate = (tripPoint) => {
+const createTripItemTemplate = (points) => {
   const {
     basePrice, dateFrom, dateTo, destination, isFavorite, offers, type, duration,
-  } = tripPoint;
+  } = points;
 
   const renderExtraOptions = (array) => {
     if (!array || array.length === 0) {
@@ -19,8 +19,6 @@ const createTripItemTemplate = (tripPoint) => {
       <span class="event__offer-price">${item.price}</span>
     </li>`).join('');
   };
-
-  const extraOptionsTemplate = renderExtraOptions(offers.offers);
 
   return `
       <li class="trip-events__item">
@@ -43,7 +41,7 @@ const createTripItemTemplate = (tripPoint) => {
           </p>
           <h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
-            ${extraOptionsTemplate}
+            ${renderExtraOptions(offers)}
           </ul>
           <button class="event__favorite-btn event__favorite-btn${isFavorite ? '--active' : ''}" type="button">
             <span class="visually-hidden">Add to favorite</span>

@@ -6,10 +6,11 @@ import { UserAction, UpdateType } from '../utils/constants';
 import { getRandomInteger } from '../mock-data/utils-and-const';
 
 export default class AddForm {
-  constructor(place, changeData, buttonPresenter) {
+  constructor(place, changeData, buttonPresenter, offers) {
     this._place = place;
     this._changeData = changeData;
     this._buttonPresenter = buttonPresenter;
+    this._offers = offers;
 
     this._addForm = null;
 
@@ -19,7 +20,7 @@ export default class AddForm {
   }
 
   renderAddForm() {
-    this._addForm = new AddFormView();
+    this._addForm = new AddFormView(this._offers);
     this._addForm.setFormSubmitHandler(this._handleFormSubmit);
     this._addForm.setDeleteClickHandler(this._handleDeleteClick);
     render(this._place, this._addForm, RenderPosition.AFTERBEGIN);

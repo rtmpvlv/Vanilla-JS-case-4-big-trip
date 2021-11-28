@@ -4,11 +4,7 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import {
-  generateOffers,
-  generateDescription,
-  generateLandscapePicsArray
-} from '../mock-data/mock-data';
+import { generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -21,27 +17,33 @@ const NEW_POINT_DEFAULT_INFO = {
     name: 'Saint-Petersburg',
     pictures: '',
   },
-  offers: '',
+  offers: [],
   type: 'Taxi',
   dateFrom: new Date(),
   dateTo: new Date(),
   duration: 0,
 };
 
-const createAdditionFormTemplate = (data) => {
+const createAdditionFormTemplate = (offersList, data) => {
   const {
     basePrice, destination, offers, type, dateFrom, dateTo,
   } = data;
 
-  const renderExtraOptions = (array) => {
-    if (!array || array.length === 0) {
-      return '';
+  const renderExtraOptions = (list, currentOffers) => {
+    if (!currentOffers || currentOffers.length === 0) {
+      return '<section class="event__section  event__section--offers"></section>';
     }
-    const optionsList = array.map(({ title, price }) => `
+    const possibleOffers = list.find((element) => element.type === type).offers;
+
+    const optionsList = possibleOffers.map(({ title, price }) => `
       <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
+        <input
+          class="event__offer-checkbox  visually-hidden"
+          id="event-offer-${title}-1" type="checkbox"
+          name="event-offer-${title}" value="${title}"
+          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''}>
         <label class="event__offer-label" for="event-offer-${title}-1">
-          <span class="event__offer-title">${title}</span>
+          <span class="event__offer-title">${title}</span>offer
           &plus;&euro;&nbsp;
           <span class="event__offer-price">${price}</span>
         </label>
@@ -71,7 +73,7 @@ const createAdditionFormTemplate = (data) => {
   const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
 
   const repeatingTemplate = createTypeListTemplate(PointTypes);
-  const extraOptionsTemplate = renderExtraOptions(offers.offers);
+  const extraOptionsTemplate = renderExtraOptions(offersList, offers);
   const photosTemplate = renderPhotos(destination.pictures);
   const destinationList = createDestinationCities(DestinationPoints);
 
@@ -141,8 +143,9 @@ const createAdditionFormTemplate = (data) => {
 };
 
 export default class AdditionForm extends SmartView {
-  constructor(point = NEW_POINT_DEFAULT_INFO) {
+  constructor(offers, point = NEW_POINT_DEFAULT_INFO) {
     super();
+    this._offers = offers;
     this._data = AdditionForm.parseFormToData(point);
 
     this._dateFromPicker = null;
@@ -156,6 +159,7 @@ export default class AdditionForm extends SmartView {
     this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
+    this._offerChangeHandler = this._offerChangeHandler.bind(this);
 
     this._setDateFromDatepicker();
     this._setDateToDatepicker();
@@ -171,7 +175,7 @@ export default class AdditionForm extends SmartView {
   }
 
   getTemplate() {
-    return createAdditionFormTemplate(this._data);
+    return createAdditionFormTemplate(this._offers, this._data);
   }
 
   removeElement() {
@@ -236,10 +240,7 @@ export default class AdditionForm extends SmartView {
     if (PointTypes.includes(evt.target.innerText)) {
       this.updateData({
         type: evt.target.innerText,
-        offers: {
-          type: evt.target.innerText,
-          offers: generateOffers(),
-        },
+        offers: this._offers.find((offer) => offer.type === evt.target.innerText).offers,
       });
     }
   }
@@ -262,6 +263,29 @@ export default class AdditionForm extends SmartView {
     }, true);
   }
 
+  _offerChangeHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    const pickedOffer = evt.target.value;
+    const index = this._data.offers.findIndex((offer) => offer.title === pickedOffer);
+    if (index < 0) {
+      const availableOffers = this._offers.find((offer) => offer.type === this._data.type).offers;
+      const newOffer = availableOffers.find((offer) => offer.title === pickedOffer);
+      this.updateData({
+        offers: [newOffer, ...this._data.offers],
+      }, true);
+      return;
+    }
+    this.updateData({
+      offers: [
+        ...this._data.offers.slice(0, index),
+        ...this._data.offers.slice(index + 1),
+      ],
+    }, true);
+  }
+
   _setInnerHandlers() {
     this.getElement()
       .querySelector('.event__type-group')
@@ -272,6 +296,9 @@ export default class AdditionForm extends SmartView {
     this.getElement()
       .querySelector('#event-price-1')
       .addEventListener('change', this._priceChangeHandler);
+    this.getElement()
+      .querySelector('.event__section--offers')
+      .addEventListener('change', this._offerChangeHandler);
   }
 
   _setDateFromDatepicker() {

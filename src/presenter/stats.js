@@ -8,9 +8,6 @@ export default class Stats {
     this._place = place;
     this._pointModel = pointModel;
     this._statsPresenter = null;
-
-    this._handleModelEvent = this._handleModelEvent.bind(this);
-    this._pointModel.addObserver(this._handleModelEvent);
   }
 
   render() {
@@ -30,9 +27,5 @@ export default class Stats {
   destroy() {
     remove(this._statsPresenter);
     this._statsPresenter = null;
-  }
-
-  _handleModelEvent() {
-    this.render();
   }
 }

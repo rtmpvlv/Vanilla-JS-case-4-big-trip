@@ -84,20 +84,6 @@ const convertDuration = (minutes) => {
   return `${mins}m`;
 };
 
-export const updateItem = (items, changedItem) => {
-  const index = items.findIndex((item) => item.id === changedItem.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    changedItem,
-    ...items.slice(index + 1),
-  ];
-};
-
 export {
   PointTypes,
   DestinationPoints,

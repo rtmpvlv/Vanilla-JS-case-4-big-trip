@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
 import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { generateOffers, generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
+import { generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
-const createEditionFormTemplate = (data) => {
+const createEditionFormTemplate = (offersList, data) => {
   const {
     basePrice, dateFrom, dateTo, destination, offers, type,
   } = data;
@@ -18,20 +18,24 @@ const createEditionFormTemplate = (data) => {
   const date1 = dayjs(dateFrom).format('DD/MM/YY HH:mm');
   const date2 = dayjs(dateTo).format('DD/MM/YY HH:mm');
 
-  const renderExtraOptions = (array) => {
-    if (!array || array.length === 0) {
-      return '';
+  const renderExtraOptions = (list, currentOffers) => {
+    const possibleOffers = list.find((element) => element.type === type).offers;
+    if (!possibleOffers || possibleOffers.length === 0) {
+      return '<section class="event__section  event__section--offers"></section>';
     }
-
-    const optionsList = array.map(({ title, price }) => `
-    <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}">
-      <label class="event__offer-label" for="event-offer-${title}-1">
-        <span class="event__offer-title">${title}</span>
-        &plus;&euro;&nbsp;
-        <span class="event__offer-price">${price}</span>
-      </label>
-    </div>`).join('');
+    const optionsList = possibleOffers.map(({ title, price }) => `
+      <div class="event__offer-selector">
+        <input
+          class="event__offer-checkbox  visually-hidden"
+          id="event-offer-${title}-1" type="checkbox"
+          name="event-offer-${title}" value="${title}"
+          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''}>
+        <label class="event__offer-label" for="event-offer-${title}-1">
+          <span class="event__offer-title">${title}</span>offer
+          &plus;&euro;&nbsp;
+          <span class="event__offer-price">${price}</span>
+        </label>
+      </div>`).join('');
 
     const optionSection = `
       <section class="event__section  event__section--offers">
@@ -60,7 +64,7 @@ const createEditionFormTemplate = (data) => {
   const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
 
   const repeatingTemplate = createTypeListTemplate(PointTypes);
-  const extraOptionsTemplate = renderExtraOptions(offers.offers);
+  const extraOptionsTemplate = renderExtraOptions(offersList, offers);
   const photosTemplate = renderPhotos(destination.pictures);
   const destinationList = createDestinationCities(DestinationPoints);
 
@@ -116,8 +120,7 @@ const createEditionFormTemplate = (data) => {
           </button>
         </header>
         <section class="event__details">
-          ${extraOptionsTemplate}
-
+        ${extraOptionsTemplate}
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${destination.description}</p>
@@ -135,8 +138,9 @@ const createEditionFormTemplate = (data) => {
 };
 
 export default class EditionForm extends SmartView {
-  constructor(point) {
+  constructor(offers, point) {
     super();
+    this._offers = offers;
     this._data = EditionForm.parseFormToData(point);
 
     this._dateFromPicker = null;
@@ -150,6 +154,7 @@ export default class EditionForm extends SmartView {
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+    this._offerChangeHandler = this._offerChangeHandler.bind(this);
 
     this._setDateFromDatepicker();
     this._setDateToDatepicker();
@@ -165,7 +170,7 @@ export default class EditionForm extends SmartView {
   }
 
   getTemplate() {
-    return createEditionFormTemplate(this._data);
+    return createEditionFormTemplate(this._offers, this._data);
   }
 
   removeElement() {
@@ -232,7 +237,7 @@ export default class EditionForm extends SmartView {
         type: evt.target.innerText,
         offers: {
           type: evt.target.innerText,
-          offers: generateOffers(),
+          offers: this._offers.find((offer) => offer.type === evt.target.innerText).offers,
         },
       });
     }
@@ -256,6 +261,29 @@ export default class EditionForm extends SmartView {
     }, true);
   }
 
+  _offerChangeHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    const pickedOffer = evt.target.value;
+    const index = this._data.offers.findIndex((offer) => offer.title === pickedOffer);
+    if (index < 0) {
+      const availableOffers = this._offers.find((offer) => offer.type === this._data.type).offers;
+      const newOffer = availableOffers.find((offer) => offer.title === pickedOffer);
+      this.updateData({
+        offers: [newOffer, ...this._data.offers],
+      }, true);
+      return;
+    }
+    this.updateData({
+      offers: [
+        ...this._data.offers.slice(0, index),
+        ...this._data.offers.slice(index + 1),
+      ],
+    }, true);
+  }
+
   _setInnerHandlers() {
     this.getElement()
       .querySelector('.event__type-group')
@@ -266,6 +294,9 @@ export default class EditionForm extends SmartView {
     this.getElement()
       .querySelector('#event-price-1')
       .addEventListener('change', this._priceChangeHandler);
+    this.getElement()
+      .querySelector('.event__section--offers')
+      .addEventListener('change', this._offerChangeHandler);
   }
 
   _setDateFromDatepicker() {
