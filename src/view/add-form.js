@@ -3,28 +3,13 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
-import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
+import { PointTypes } from '../mock-data/utils-and-const';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
-const NEW_POINT_DEFAULT_INFO = {
-  basePrice: 0,
-  destination: {
-    description: '',
-    name: 'Saint-Petersburg',
-    pictures: '',
-  },
-  offers: [],
-  type: 'Taxi',
-  dateFrom: new Date(),
-  dateTo: new Date(),
-  duration: 0,
-};
-
-const createAdditionFormTemplate = (offersList, data) => {
+const createAdditionFormTemplate = (offersList, destinationsList, data) => {
   const {
     basePrice, destination, offers, type, dateFrom, dateTo,
   } = data;
@@ -33,7 +18,12 @@ const createAdditionFormTemplate = (offersList, data) => {
     if (!currentOffers || currentOffers.length === 0) {
       return '<section class="event__section  event__section--offers"></section>';
     }
-    const possibleOffers = list.find((element) => element.type === type).offers;
+    const possibleOffers = list
+      .find((element) => element.type === type.toLowerCase()).offers;
+
+    if (!possibleOffers || possibleOffers.length === 0) {
+      return '<section class="event__section  event__section--offers"></section>';
+    }
 
     const optionsList = possibleOffers.map(({ title, price }) => `
       <div class="event__offer-selector">
@@ -60,7 +50,15 @@ const createAdditionFormTemplate = (offersList, data) => {
     return optionSection;
   };
 
-  const renderPhotos = (array) => (array ? array.map((item) => `<img class="event__photo" src="${item.src}" alt="Event photo"></img>`).join('') : '');
+  const renderPictures = (point, list) => {
+    let pictures = null;
+    list.forEach((item) => {
+      if (item.name === point.name) {
+        pictures = item.pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="Event photo"></img>`).join('');
+      }
+    });
+    return pictures;
+  };
 
   const createTypeListTemplate = (array) => (
     array.map((item) => `
@@ -70,12 +68,7 @@ const createAdditionFormTemplate = (offersList, data) => {
       </div>`).join('')
   );
 
-  const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
-
-  const repeatingTemplate = createTypeListTemplate(PointTypes);
-  const extraOptionsTemplate = renderExtraOptions(offersList, offers);
-  const photosTemplate = renderPhotos(destination.pictures);
-  const destinationList = createDestinationCities(DestinationPoints);
+  const createDestinationCities = (array) => (array.map((item) => `<option value="${item.name}"></option>`).join(''));
 
   return `
     <li class="trip-events__item">
@@ -91,7 +84,7 @@ const createAdditionFormTemplate = (offersList, data) => {
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${repeatingTemplate}
+                ${createTypeListTemplate(PointTypes)}
               </fieldset>
             </div>
           </div>
@@ -102,7 +95,7 @@ const createAdditionFormTemplate = (offersList, data) => {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${destinationList}
+              ${createDestinationCities(destinationsList)}
             </datalist>
           </div>
 
@@ -126,27 +119,41 @@ const createAdditionFormTemplate = (offersList, data) => {
           <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
         <section class="event__details">
-          ${extraOptionsTemplate}
+          ${renderExtraOptions(offersList, offers)}
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${destination.description}</p>
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                ${photosTemplate}
+                ${renderPictures(destination, destinationsList)}
               </div>
             </div>
           </section>
         </section>
       </form>
-    </li>
-  `;
+    </li>`;
 };
 
 export default class AdditionForm extends SmartView {
-  constructor(offers, point = NEW_POINT_DEFAULT_INFO) {
+  constructor(offersModel, destinationsModel) {
     super();
-    this._offers = offers;
-    this._data = AdditionForm.parseFormToData(point);
+    this._offersModel = offersModel;
+    this._offers = this._offersModel.getOffers();
+    this._destinationsModel = destinationsModel;
+    this._destinationsList = this._destinationsModel.getDestinations();
+    this._newPointDefaultInfo = {
+      basePrice: 0,
+      destination: {
+        description: this._destinationsList[0].description,
+        name: this._destinationsList[0].name,
+        pictures: this._destinationsList[0].pictures,
+      },
+      offers: this._offers[0].offers,
+      type: this._offers[0].type,
+      dateFrom: new Date(),
+      dateTo: new Date(),
+    };
+    this._data = AdditionForm.parseFormToData(this._newPointDefaultInfo);
 
     this._dateFromPicker = null;
     this._dateToPicker = null;
@@ -175,7 +182,7 @@ export default class AdditionForm extends SmartView {
   }
 
   getTemplate() {
-    return createAdditionFormTemplate(this._offers, this._data);
+    return createAdditionFormTemplate(this._offers, this._destinationsList, this._data);
   }
 
   removeElement() {
@@ -238,10 +245,18 @@ export default class AdditionForm extends SmartView {
   _typeChangeHandler(evt) {
     evt.preventDefault();
     if (PointTypes.includes(evt.target.innerText)) {
-      this.updateData({
-        type: evt.target.innerText,
-        offers: this._offers.find((offer) => offer.type === evt.target.innerText).offers,
-      });
+      try {
+        this.updateData({
+          type: evt.target.innerText,
+          offers: this._offers
+            .find((offer) => offer.type === evt.target.innerText.toLowerCase()).offers,
+        });
+      } catch (e) {
+        this.updateData({
+          type: evt.target.innerText,
+          offers: [],
+        });
+      }
     }
   }
 
@@ -250,8 +265,10 @@ export default class AdditionForm extends SmartView {
     this.updateData({
       destination: {
         name: evt.target.value,
-        description: generateDescription(),
-        pictures: generateLandscapePicsArray(),
+        description: this._destinationsList
+          .find((city) => city.name === evt.target.value).description,
+        pictures: this._destinationsList
+          .find((city) => city.name === evt.target.value).pictures,
       },
     });
   }

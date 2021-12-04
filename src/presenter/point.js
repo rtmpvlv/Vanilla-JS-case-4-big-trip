@@ -11,11 +11,12 @@ const Mode = {
 };
 
 export default class TripEventsListItem {
-  constructor(tripEventsList, changeData, changeMode, offers) {
+  constructor(tripEventsList, changeData, changeMode, offersModel, destinationsModel) {
     this._tripEventsList = tripEventsList;
     this._changeData = changeData;
     this._changeMode = changeMode;
-    this._offers = offers;
+    this._offersModel = offersModel;
+    this._destinationsModel = destinationsModel;
 
     this._listItemView = null;
     this._editFormView = null;
@@ -34,7 +35,7 @@ export default class TripEventsListItem {
     const prevListItem = this._listItemView;
     const prevEditFrom = this._editFormView;
     this._listItemView = new ListItemView(this._point);
-    this._editFormView = new EditFormView(this._offers, this._point);
+    this._editFormView = new EditFormView(this._offersModel, this._destinationsModel, this._point);
 
     this._listItemView.setEditClickHandler(this._replaceListItemToForm);
     this._listItemView.setFavoriteClickHandler(this._handleFavoriteClick);

@@ -3,14 +3,13 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
-import { PointTypes, DestinationPoints } from '../mock-data/utils-and-const';
-import { generateDescription, generateLandscapePicsArray } from '../mock-data/mock-data';
+import { PointTypes } from '../mock-data/utils-and-const';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
-const createEditionFormTemplate = (offersList, data) => {
+const createEditionFormTemplate = (offersList, destinationsList, data) => {
   const {
     basePrice, dateFrom, dateTo, destination, offers, type,
   } = data;
@@ -19,10 +18,13 @@ const createEditionFormTemplate = (offersList, data) => {
   const date2 = dayjs(dateTo).format('DD/MM/YY HH:mm');
 
   const renderExtraOptions = (list, currentOffers) => {
-    const possibleOffers = list.find((element) => element.type === type).offers;
+    const possibleOffers = list
+      .find((element) => element.type === type.toLowerCase()).offers;
+
     if (!possibleOffers || possibleOffers.length === 0) {
       return '<section class="event__section  event__section--offers"></section>';
     }
+
     const optionsList = possibleOffers.map(({ title, price }) => `
       <div class="event__offer-selector">
         <input
@@ -61,12 +63,7 @@ const createEditionFormTemplate = (offersList, data) => {
       </div>`).join('')
   );
 
-  const createDestinationCities = (array) => (array.map((item) => `<option value="${item}"></option>`).join(''));
-
-  const repeatingTemplate = createTypeListTemplate(PointTypes);
-  const extraOptionsTemplate = renderExtraOptions(offersList, offers);
-  const photosTemplate = renderPhotos(destination.pictures);
-  const destinationList = createDestinationCities(DestinationPoints);
+  const createDestinationCities = (array) => (array.map((item) => `<option value="${item.name}"></option>`).join(''));
 
   return `
     <li class="trip-events__item">
@@ -82,7 +79,7 @@ const createEditionFormTemplate = (offersList, data) => {
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${repeatingTemplate}
+                ${createTypeListTemplate(PointTypes)}
               </fieldset>
             </div>
           </div>
@@ -93,7 +90,7 @@ const createEditionFormTemplate = (offersList, data) => {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-            ${destinationList}
+            ${createDestinationCities(destinationsList)}
             </datalist>
           </div>
 
@@ -120,14 +117,14 @@ const createEditionFormTemplate = (offersList, data) => {
           </button>
         </header>
         <section class="event__details">
-        ${extraOptionsTemplate}
+        ${renderExtraOptions(offersList, offers)}
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${destination.description}</p>
 
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                ${photosTemplate}
+                ${renderPhotos(destination.pictures)}
               </div>
             </div>
           </section>
@@ -138,9 +135,12 @@ const createEditionFormTemplate = (offersList, data) => {
 };
 
 export default class EditionForm extends SmartView {
-  constructor(offers, point) {
+  constructor(offersModel, destinationsModel, point) {
     super();
-    this._offers = offers;
+    this._offersModel = offersModel;
+    this._offers = this._offersModel.getOffers();
+    this._destinationsModel = destinationsModel;
+    this._destinationsList = this._destinationsModel.getDestinations();
     this._data = EditionForm.parseFormToData(point);
 
     this._dateFromPicker = null;
@@ -170,7 +170,7 @@ export default class EditionForm extends SmartView {
   }
 
   getTemplate() {
-    return createEditionFormTemplate(this._offers, this._data);
+    return createEditionFormTemplate(this._offers, this._destinationsList, this._data);
   }
 
   removeElement() {
@@ -233,13 +233,18 @@ export default class EditionForm extends SmartView {
   _typeChangeHandler(evt) {
     evt.preventDefault();
     if (PointTypes.includes(evt.target.innerText)) {
-      this.updateData({
-        type: evt.target.innerText,
-        offers: {
+      try {
+        this.updateData({
           type: evt.target.innerText,
-          offers: this._offers.find((offer) => offer.type === evt.target.innerText).offers,
-        },
-      });
+          offers: this._offers
+            .find((offer) => offer.type === evt.target.innerText.toLowerCase()).offers,
+        });
+      } catch (e) {
+        this.updateData({
+          type: evt.target.innerText,
+          offers: [],
+        });
+      }
     }
   }
 
@@ -248,8 +253,10 @@ export default class EditionForm extends SmartView {
     this.updateData({
       destination: {
         name: evt.target.value,
-        description: generateDescription(),
-        pictures: generateLandscapePicsArray(),
+        description: this._destinationsList
+          .find((city) => city.name === evt.target.value).description,
+        pictures: this._destinationsList
+          .find((city) => city.name === evt.target.value).pictures,
       },
     });
   }

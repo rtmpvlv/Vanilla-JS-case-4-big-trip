@@ -8,7 +8,7 @@ import {
   replace
 } from '../utils/render';
 
-export default class TripInfo {
+export default class pathInfo {
   constructor(place, pointModel) {
     this._place = place;
     this._pointModel = pointModel;

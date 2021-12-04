@@ -5,8 +5,10 @@ import AbstractView from './abstract';
 
 const createTripItemTemplate = (points) => {
   const {
-    basePrice, dateFrom, dateTo, destination, isFavorite, offers, type, duration,
+    basePrice, dateFrom, dateTo, destination, isFavorite, offers, type,
   } = points;
+
+  const duration = dayjs(dateTo).diff(dateFrom, 'm');
 
   const renderExtraOptions = (array) => {
     if (!array || array.length === 0) {

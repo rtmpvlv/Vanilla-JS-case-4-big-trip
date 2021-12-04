@@ -3,6 +3,7 @@
 import TripEventsListView from '../view/trips-event-list';
 import SortView from '../view/sort';
 import NoPointsView from '../view/no-trippoints';
+import LoadingView from '../view/loading';
 import ListItem from './point';
 import AddFormPresenter from './add-form';
 import { remove, render, RenderPosition } from '../utils/render';
@@ -16,15 +17,24 @@ import { sortPrice, sortDate, sortDuration } from '../utils/sort-utils';
 import filter from '../utils/filter';
 
 export default class TripEventsList {
-  constructor(place, pointModel, filterModel, buttonPresenter, offersModel) {
+  constructor(
+    place,
+    pointModel,
+    filterModel,
+    buttonPresenter,
+    offersModel,
+    destinationsModel,
+    api,
+  ) {
     this._tripEventsSection = place;
     this._pointModel = pointModel;
-
     this._filterModel = filterModel;
     this._buttonPresenter = buttonPresenter;
-    this._offersModel = offersModel;
-    this._offers = this._offersModel.getOffers();
+    this._offersmodel = offersModel;
+    this._destinationsModel = destinationsModel;
+    this._api = api;
 
+    this._isLoading = true;
     this._filterType = FilterType.EVERYTHING;
     this._currentSortType = SortType.DAY;
 
@@ -32,6 +42,7 @@ export default class TripEventsList {
     this._sortView = null;
     this._noPointsView = null;
     this._listItemPresenter = new Map();
+    this._loadingComponent = new LoadingView();
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
@@ -45,12 +56,17 @@ export default class TripEventsList {
       this._tripEventsList,
       this._handleViewAction,
       this._buttonPresenter,
-      this._offers,
+      this._offersmodel,
+      this._destinationsModel,
     );
   }
 
   renderView() {
-    if (this._pointModel.getPoints().length === 0) {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+    if (this._getPoints().length === 0) {
       this._renderNoPoints();
       return;
     }
@@ -77,13 +93,14 @@ export default class TripEventsList {
     this._filterType = this._filterModel.getFilter();
     const points = this._pointModel.getPoints();
     const filteredPoints = filter[this._filterType](points);
+
     switch (this._currentSortType) {
       case SortType.DAY:
-        return filteredPoints.slice().sort(sortDate);
+        return filteredPoints.sort(sortDate);
       case SortType.TIME:
-        return filteredPoints.slice().sort(sortDuration);
+        return filteredPoints.sort(sortDuration);
       case SortType.PRICE:
-        return filteredPoints.slice().sort(sortPrice);
+        return filteredPoints.sort(sortPrice);
       default:
         throw new Error('Unexpected sort type.');
     }
@@ -111,7 +128,8 @@ export default class TripEventsList {
       this._tripEventsList,
       this._handleViewAction,
       this.changeMode,
-      this._offers,
+      this._offersmodel,
+      this._destinationsModel,
     );
     listItemPresenter.renderListItem(point);
     this._listItemPresenter.set(point.id, listItemPresenter);
@@ -122,11 +140,16 @@ export default class TripEventsList {
     render(this._tripEventsSection, this._noPointsView);
   }
 
+  _renderLoading() {
+    render(this._tripEventsSection, this._loadingComponent);
+  }
+
   _clearEventsList() {
     this._addFormPresenter.destroy();
     this._listItemPresenter.forEach((item) => item._destroy());
     this._listItemPresenter.clear();
     remove(this._sortView);
+    remove(this._loadingComponent);
     if (this._noPointsView) {
       remove(this._noPointsView);
     }
@@ -135,7 +158,8 @@ export default class TripEventsList {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this._pointModel.updatePoint(updateType, update);
+        this._api.updatePoint(update)
+          .then((response) => this._pointModel.updatePoint(updateType, response));
         break;
       case UserAction.ADD_POINT:
         this._pointModel.addPoint(updateType, update);
@@ -159,6 +183,11 @@ export default class TripEventsList {
         break;
       case UpdateType.MAJOR:
         this._clearEventsList();
+        this.renderView();
+        break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
         this.renderView();
         break;
       default:

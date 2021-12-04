@@ -4,6 +4,9 @@ import { sortDate, sortDateTo } from '../utils/sort-utils';
 import AbstractView from './abstract';
 
 const renderTripPoints = (array) => {
+  if (array.length === 0) {
+    return '';
+  }
   array.sort(sortDate);
   if (array.length < 4) {
     return Array.from(new Set(array.map(({ destination }) => destination.name))).join('&nbsp;&mdash;&nbsp;');
@@ -12,6 +15,9 @@ const renderTripPoints = (array) => {
 };
 
 const renderDateInformation = ((array) => {
+  if (array.length === 0) {
+    return '';
+  }
   const earliestDateFrom = array.sort(sortDate)[0];
   const latestDateTo = array.sort(sortDateTo)[0];
   return `${dayjs(earliestDateFrom.dateFrom).format('DD MMM')}&nbsp;&mdash;&nbsp;${dayjs(latestDateTo.dateTo).format('DD MMM')}`;
