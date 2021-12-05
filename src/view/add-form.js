@@ -1,6 +1,5 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable no-underscore-dangle */
-import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import SmartView from './smart';
 import { PointTypes } from '../mock-data/utils-and-const';
@@ -11,7 +10,7 @@ const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
 const createAdditionFormTemplate = (offersList, destinationsList, data) => {
   const {
-    basePrice, destination, offers, type, dateFrom, dateTo,
+    basePrice, destination, offers, type, dateFrom, dateTo, isDisabled, isSaving,
   } = data;
 
   const renderExtraOptions = (list, currentOffers) => {
@@ -31,7 +30,7 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
           class="event__offer-checkbox  visually-hidden"
           id="event-offer-${title}-1" type="checkbox"
           name="event-offer-${title}" value="${title}"
-          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''}>
+          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
         <label class="event__offer-label" for="event-offer-${title}-1">
           <span class="event__offer-title">${title}</span>offer
           &plus;&euro;&nbsp;
@@ -63,7 +62,11 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
   const createTypeListTemplate = (array) => (
     array.map((item) => `
       <div class="event__type-item">
-        <input id="event-type-${item.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}" ${item === type ? 'checked' : ''}>
+        <input
+        id="event-type-${item.toLowerCase()}-1"
+        class="event__type-input  visually-hidden"
+        type="radio" name="event-type"
+        value="${item}" ${item === type ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
         <label class="event__type-label  event__type-label--${item.toLowerCase()}" for="event-type-${item.toLowerCase()}-1">${item}</label>
       </div>`).join('')
   );
@@ -79,7 +82,7 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
             <div class="event__type-list">
               <fieldset class="event__type-group">
@@ -93,7 +96,13 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+            <input
+            class="event__input  event__input--destination"
+            id="event-destination-1"
+            type="text"
+            name="event-destination"
+            value="${destination.name}"
+            list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
             <datalist id="destination-list-1">
               ${createDestinationCities(destinationsList)}
             </datalist>
@@ -101,10 +110,20 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom}">
+            <input
+            class="event__input  event__input--time"
+            id="event-start-time-1"
+            type="text"
+            name="event-start-time"
+            value="${dateFrom}" ${isDisabled ? 'disabled' : ''}>
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo}">
+            <input
+            class="event__input  event__input--time"
+            id="event-end-time-1"
+            type="text"
+            name="event-end-time"
+            value="${dateTo}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -112,10 +131,16 @@ const createAdditionFormTemplate = (offersList, destinationsList, data) => {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="number" min="0" name="event-price" value="${basePrice}">
+            <input
+            class="event__input  event__input--price"
+            id="event-price-1"
+            type="number"
+            min="0"
+            name="event-price"
+            value="${basePrice}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit"}  ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
           <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
         <section class="event__details">
@@ -152,6 +177,7 @@ export default class AdditionForm extends SmartView {
       type: this._offers[0].type,
       dateFrom: new Date(),
       dateTo: new Date(),
+      isFavorite: false,
     };
     this._data = AdditionForm.parseFormToData(this._newPointDefaultInfo);
 
@@ -174,11 +200,21 @@ export default class AdditionForm extends SmartView {
   }
 
   static parseFormToData(point) {
-    return Object.assign({}, point);
+    return Object.assign(
+      {},
+      point,
+      {
+        isDisabled: false,
+        isSaving: false,
+      },
+    );
   }
 
   static parseDataToForm(data) {
-    return Object.assign({}, data);
+    const newData = Object.assign({}, data);
+    delete newData.isDisabled;
+    delete newData.isSaving;
+    return newData;
   }
 
   getTemplate() {
@@ -239,7 +275,7 @@ export default class AdditionForm extends SmartView {
 
   _formDeleteClickHandler(evt) {
     evt.preventDefault();
-    this._callback.deleteClick(AdditionForm.parseDataToForm(this._data));
+    this._callback.deleteClick();
   }
 
   _typeChangeHandler(evt) {
@@ -247,7 +283,7 @@ export default class AdditionForm extends SmartView {
     if (PointTypes.includes(evt.target.innerText)) {
       try {
         this.updateData({
-          type: evt.target.innerText,
+          type: evt.target.innerText.toLowerCase(),
           offers: this._offers
             .find((offer) => offer.type === evt.target.innerText.toLowerCase()).offers,
         });
@@ -338,8 +374,7 @@ export default class AdditionForm extends SmartView {
 
   _dateFromChangeHandler(userDate) {
     this.updateData({
-      dateFrom: userDate,
-      duration: dayjs(this._data.dateTo).diff(userDate, 'm'),
+      dateFrom: new Date(userDate),
     });
   }
 
@@ -363,8 +398,7 @@ export default class AdditionForm extends SmartView {
 
   _dateToChangeHandler(userDate) {
     this.updateData({
-      dateTo: userDate,
-      duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
+      dateTo: new Date(userDate),
     });
   }
 }

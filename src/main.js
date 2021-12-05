@@ -1,20 +1,21 @@
+import PointModel from './model/points';
+import FilterModel from './model/filter';
+import OffersModel from './model/offers';
+import DestinationsModel from './model/destinations';
 import MenuView from './view/menu';
 import StatsPresenter from './presenter/stats';
 import ListPresenter from './presenter/list';
 import FilterPresenter from './presenter/filter';
 import PathPresenter from './presenter/path-info';
-import PointModel from './model/points';
-import FilterModel from './model/filter';
-import OffersModel from './model/offers';
-import DestinationsModel from './model/destinations';
+import ButtonPresenter from './presenter/button';
 import { render } from './utils/render';
 import {
   MenuItem,
   SortType,
   UpdateType,
-  FilterType
+  FilterType,
+  APIDataType
 } from './utils/constants';
-import ButtonPresenter from './presenter/button';
 import Api from './api';
 
 const AUTHORIZATION = 'Basic rtmpvlv';
@@ -86,14 +87,14 @@ const handleSiteMenuClick = (menuItem) => {
 filterPresenter.init();
 listPresenter.renderView();
 
-api.getDestinations()
+api.getData(APIDataType.DESTINATIONS)
   .then((destinations) => {
     destinationsModel.setDestinations(destinations);
-    return api.getOffers();
+    return api.getData(APIDataType.OFFERS);
   })
   .then((offers) => {
     offersModel.setOffers(offers);
-    return api.getPoints();
+    return api.getData(APIDataType.POINTS);
   })
   .then((points) => {
     pointModel.setPoints(UpdateType.INIT, points);
@@ -101,6 +102,8 @@ api.getDestinations()
     menuView.setMenuClickHandler(handleSiteMenuClick);
   })
   .catch(() => {
+    destinationsModel.setDestinations([]);
+    offersModel.setOffers([]);
     pointModel.setPoints(UpdateType.INIT, []);
     render(headerMenuNavigation, menuView);
     menuView.setMenuClickHandler(handleSiteMenuClick);
@@ -108,3 +111,4 @@ api.getDestinations()
 
 // Не отрабатывает кнопка Добавить на пустом листе
 // Дата окончания может быть меньше даты начала события. 49
+// Отключить клики на заблокированной сортировке

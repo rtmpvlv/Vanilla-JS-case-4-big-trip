@@ -16,11 +16,11 @@ const createTripFiltersTemplate = ((filter, currentType, isDisabled) => {
 });
 
 export default class Filter extends AbstractView {
-  constructor(filters, currentType, disability) {
+  constructor(filters, currentType, isDisabled) {
     super();
     this._filters = filters;
     this._currentType = currentType;
-    this._isDisabled = disability;
+    this._isDisabled = isDisabled;
 
     this._filterTypeChangeHandler = this._filterTypeChangeHandler.bind(this);
   }

@@ -4,7 +4,7 @@ import TripEventsListView from '../view/trips-event-list';
 import SortView from '../view/sort';
 import NoPointsView from '../view/no-trippoints';
 import LoadingView from '../view/loading';
-import ListItem from './point';
+import Point, { State as PointPresenterViewState } from './point';
 import AddFormPresenter from './add-form';
 import { remove, render, RenderPosition } from '../utils/render';
 import {
@@ -124,7 +124,7 @@ export default class TripEventsList {
   }
 
   _renderListItem(point) {
-    const listItemPresenter = new ListItem(
+    const listItemPresenter = new Point(
       this._tripEventsList,
       this._handleViewAction,
       this.changeMode,
@@ -158,14 +158,27 @@ export default class TripEventsList {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
+        this._listItemPresenter.get(update.id)
+          .setViewState(PointPresenterViewState.SAVING);
         this._api.updatePoint(update)
-          .then((response) => this._pointModel.updatePoint(updateType, response));
+          .then((response) => this._pointModel.updatePoint(updateType, response))
+          .catch(() => this._listItemPresenter.get(update.id)
+            .setViewState(PointPresenterViewState.ABORTING));
         break;
       case UserAction.ADD_POINT:
-        this._pointModel.addPoint(updateType, update);
+        this._addFormPresenter.setSaving();
+        this._api.addPoint(update)
+          .then((response) => this._pointModel.addPoint(updateType, response))
+          .catch(() => this._addFormPresenter.setAborting());
         break;
       case UserAction.DELETE_POINT:
-        this._pointModel.deletePoint(updateType, update);
+        this._listItemPresenter.get(update.id)
+          .setViewState(PointPresenterViewState.DELETING);
+        this._api.deletePoint(update)
+          .then(() => this._pointModel.deletePoint(updateType, update))
+          .catch(() => this._listItemPresenter
+            .get(update.id)
+            .setViewState(PointPresenterViewState.ABORTING));
         break;
       default:
         throw new Error('Unexpected user\'s action.');

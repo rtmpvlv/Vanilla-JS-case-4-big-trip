@@ -3,7 +3,6 @@
 import AddFormView from '../view/add-form';
 import { render, remove, RenderPosition } from '../utils/render';
 import { UserAction, UpdateType } from '../utils/constants';
-import { getRandomInteger } from '../mock-data/utils-and-const';
 
 export default class AddForm {
   constructor(place, changeData, buttonPresenter, offersModel, destinationsModel) {
@@ -13,7 +12,7 @@ export default class AddForm {
     this._offersModel = offersModel;
     this._destinationsModel = destinationsModel;
 
-    this._addForm = null;
+    this._addFormElement = null;
 
     this._keyPressed = this._keyPressed.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
@@ -21,21 +20,39 @@ export default class AddForm {
   }
 
   renderAddForm() {
-    this._addForm = new AddFormView(this._offersModel, this._destinationsModel);
-    this._addForm.setFormSubmitHandler(this._handleFormSubmit);
-    this._addForm.setDeleteClickHandler(this._handleDeleteClick);
-    render(this._place, this._addForm, RenderPosition.AFTERBEGIN);
+    this._addFormElement = new AddFormView(this._offersModel, this._destinationsModel);
+    this._addFormElement.setFormSubmitHandler(this._handleFormSubmit);
+    this._addFormElement.setDeleteClickHandler(this._handleDeleteClick);
+    render(this._place, this._addFormElement, RenderPosition.AFTERBEGIN);
     document.addEventListener('keydown', this._keyPressed);
   }
 
   destroy() {
     this._buttonPresenter.renderButton();
-    if (this._addForm === null) {
+    if (this._addFormElement === null) {
       return;
     }
-    remove(this._addForm);
-    this._addForm = null;
+    remove(this._addFormElement);
+    this._addFormElement = null;
     document.removeEventListener('keydown', this._keyPressed);
+  }
+
+  setSaving() {
+    this._addFormElement.updateData({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._addFormElement.updateData({
+        isDisabled: false,
+        isSaving: false,
+      });
+    };
+
+    this._addFormElement.shake(resetFormState);
   }
 
   _keyPressed(evt) {
@@ -50,9 +67,8 @@ export default class AddForm {
     this._changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      Object.assign({ id: getRandomInteger(1, 10000000) }, point),
+      point,
     );
-    this.destroy();
   }
 
   _handleDeleteClick() {

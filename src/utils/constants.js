@@ -41,3 +41,9 @@ export const PointTypes = [
   'Sightseeing',
   'Restaurant',
 ];
+
+export const APIDataType = {
+  POINTS: 'points',
+  OFFERS: 'offers',
+  DESTINATIONS: 'destinations',
+};

@@ -3,9 +3,9 @@ import SmartView from './smart';
 import { MenuItem } from '../utils/constants';
 
 export default class Button extends SmartView {
-  constructor(disability) {
+  constructor(isDisabled) {
     super();
-    this._isDisabled = disability;
+    this._isDisabled = isDisabled;
     this._markup = `
     <button class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button" id ="${MenuItem.ADD}" ${this._isDisabled ? 'disabled' : ''}>New event</button>`;
     this._clickHandler = this._clickHandler.bind(this);

@@ -11,7 +11,7 @@ const DATE_PICKER_FORMAT = 'd/m/y H:i';
 
 const createEditionFormTemplate = (offersList, destinationsList, data) => {
   const {
-    basePrice, dateFrom, dateTo, destination, offers, type,
+    basePrice, dateFrom, dateTo, destination, offers, type, isDisabled, isSaving, isDeleting,
   } = data;
 
   const date1 = dayjs(dateFrom).format('DD/MM/YY HH:mm');
@@ -31,7 +31,7 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
           class="event__offer-checkbox  visually-hidden"
           id="event-offer-${title}-1" type="checkbox"
           name="event-offer-${title}" value="${title}"
-          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''}>
+          ${currentOffers.some((offer) => offer.title === title) ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
         <label class="event__offer-label" for="event-offer-${title}-1">
           <span class="event__offer-title">${title}</span>offer
           &plus;&euro;&nbsp;
@@ -58,7 +58,12 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
 
   const createTypeListTemplate = (array) => (array.map((item) => `
       <div class="event__type-item">
-        <input id="event-type-${item.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}" ${item === type ? 'checked' : ''}>
+        <input
+        id="event-type-${item.toLowerCase()}-1"
+        class="event__type-input  visually-hidden"
+        type="radio"
+        name="event-type"
+        value="${item}" ${item === type ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
         <label class="event__type-label  event__type-label--${item.toLowerCase()}" for="event-type-${item.toLowerCase()}-1">${item}</label>
       </div>`).join('')
   );
@@ -74,7 +79,7 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
             <div class="event__type-list">
               <fieldset class="event__type-group">
@@ -88,7 +93,13 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
             <label class="event__label  event__type-output" for="event-destination-1">
              ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+            <input
+            class="event__input  event__input--destination"
+            id="event-destination-1"
+            type="text"
+            name="event-destination"
+            value="${destination.name}"
+            list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
             <datalist id="destination-list-1">
             ${createDestinationCities(destinationsList)}
             </datalist>
@@ -96,10 +107,20 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${date1}">
+            <input
+            class="event__input  event__input--time"
+            id="event-start-time-1"
+            type="text"
+            name="event-start-time"
+            value="${date1}" ${isDisabled ? 'disabled' : ''}>
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${date2}">
+            <input
+            class="event__input  event__input--time"
+            id="event-end-time-1"
+            type="text"
+            name="event-end-time"
+            value="${date2}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -107,11 +128,17 @@ const createEditionFormTemplate = (offersList, destinationsList, data) => {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="number" min="0" name="event-price" value="${basePrice}">
+            <input
+            class="event__input  event__input--price"
+            id="event-price-1"
+            type="number"
+            min="0"
+            name="event-price"
+            value="${basePrice}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}> ${isSaving ? 'Saving...' : 'Save'}</button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
@@ -235,7 +262,7 @@ export default class EditionForm extends SmartView {
     if (PointTypes.includes(evt.target.innerText)) {
       try {
         this.updateData({
-          type: evt.target.innerText,
+          type: evt.target.innerText.toLowerCase(),
           offers: this._offers
             .find((offer) => offer.type === evt.target.innerText.toLowerCase()).offers,
         });
@@ -326,8 +353,7 @@ export default class EditionForm extends SmartView {
 
   _dateFromChangeHandler(userDate) {
     this.updateData({
-      dateFrom: userDate,
-      duration: dayjs(this._data.dateTo).diff(userDate, 'm'),
+      dateFrom: new Date(userDate),
     });
   }
 
@@ -351,8 +377,7 @@ export default class EditionForm extends SmartView {
 
   _dateToChangeHandler(userDate) {
     this.updateData({
-      dateTo: userDate,
-      duration: dayjs(userDate).diff(this._data.dateFrom, 'm'),
+      dateTo: new Date(userDate),
     });
   }
 }
