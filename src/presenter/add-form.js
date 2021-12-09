@@ -3,6 +3,7 @@
 import AddFormView from '../view/add-form';
 import { render, remove, RenderPosition } from '../utils/render';
 import { UserAction, UpdateType } from '../utils/constants';
+import toast from '../utils/toast';
 
 export default class AddForm {
   constructor(place, changeData, buttonPresenter, offersModel, destinationsModel) {
@@ -64,6 +65,9 @@ export default class AddForm {
   }
 
   _handleFormSubmit(point) {
+    if (!window.navigator.onLine) {
+      toast('Can\'t create new point offline.');
+    }
     this._changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,

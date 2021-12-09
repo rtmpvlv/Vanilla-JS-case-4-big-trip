@@ -4,6 +4,7 @@ import EditFormView from '../view/edit-form';
 import ListItemView from '../view/list-item';
 import { render, replace, remove } from '../utils/render';
 import { UserAction, UpdateType } from '../utils/constants';
+import toast from '../utils/toast';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -113,7 +114,7 @@ export default class TripEventsListItem {
   _replaceListItemToForm() {
     replace(this._editFormElement, this._listItemElement);
     document.addEventListener('keydown', this._keyPressed);
-    this._changeMode(); // ?
+    this._changeMode();
     this._mode = Mode.EDITING;
   }
 
@@ -166,6 +167,9 @@ export default class TripEventsListItem {
   }
 
   _handleDeleteClick(point) {
+    if (!window.navigator.onLine) {
+      toast('Can\'t delete point offline.');
+    }
     this._changeData(
       UserAction.DELETE_POINT,
       UpdateType.MINOR,

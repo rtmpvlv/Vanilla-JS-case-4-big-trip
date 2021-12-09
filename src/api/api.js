@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import PointsModel from './model/points';
+import PointsModel from '../model/points';
 
 const Method = {
   GET: 'GET',
@@ -19,10 +19,20 @@ export default class Api {
     this._authorization = authorization;
   }
 
-  getData(type) {
-    return this._load({ url: type })
+  getPoints() {
+    return this._load({ url: 'points' })
       .then(Api.toJSON)
       .then((data) => data.map(PointsModel.adaptToClient));
+  }
+
+  getDestinations() {
+    return this._load({ url: 'destinations' })
+      .then(Api.toJSON);
+  }
+
+  getOffers() {
+    return this._load({ url: 'offers' })
+      .then(Api.toJSON);
   }
 
   updatePoint(point) {
@@ -52,6 +62,16 @@ export default class Api {
       url: `points/${point.id}`,
       method: Method.DELETE,
     });
+  }
+
+  sync(data) {
+    return this._load({
+      url: 'points/sync',
+      method: Method.POST,
+      body: JSON.stringify(data),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+    })
+      .then(Api.toJSON);
   }
 
   _load({

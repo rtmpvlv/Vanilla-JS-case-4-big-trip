@@ -1,6 +1,7 @@
 Проект: Большое путешествие
 О проекте
-«Большое путешествие» — современный сервис для настоящих путешественников. Сервис помогает детально спланировать маршрут поездки, рассчитать стоимость путешествия и получить информацию о достопримечательностях. Минималистичный интерфейс не даст повода отвлечься и сфокусирует внимание на планировании путешествия.
+«Большое путешествие» — современный сервис для настоящих путешественников. Сервис помогает детально спланировать маршрут поездки, рассчитать стоимость путешествия и получить информацию о достопримечательностях. 
+Минималистичный интерфейс не даст повода отвлечься и сфокусирует внимание на планировании путешествия.
 
 1. Описание функциональности
 Приложение состоит из двух экранов: «Маршрут поездки» и «Статистика».
@@ -46,7 +47,8 @@
 Тип точки маршрута (один из: Taxi, Bus, Train, Ship, Transport, Drive, Flight, Check-in, Sightseeng, Restaurant).
 Пункт назначения. Выбирается из списка предложенных значений, полученных с сервера. Пользователь не может ввести свой вариант для пункта назначения.
 Дата и время начала события. Выбор времени и даты осуществляется с помощью библиотеки flatpickr.js. Выбранная дата и время отображаются в поле в формате: день/месяц/год часы:минуты (например «25/12/2019 16:00»).
-Дата и время окончания события. Формат и требования аналогичны дате начала. Дата окончания не может быть меньше даты начала события.
+Дата и время окончания события. Формат и требования аналогичны дате начала. 
+Дата окончания не может быть меньше даты начала события.
 Стоимость. Целое положительное число.
 Дополнительные опции. В зависимости от типа точки маршрута пользователь может выбрать дополнительные опции (offers).
 Дополнительные опции отображаются в блоке offers. Набор дополнительных опций, которые может выбрать пользователь при создании точки маршрута, зависит от типа точки маршрута. Наборы дополнительных опций для каждого типа точки маршрута загружаются с сервера.
@@ -126,198 +128,6 @@ Past — список пройденных точек маршрута, т. е. 
 
 1.9 Взаимодействие с сервером
 Сервер расположен по адресу https://14.ecmascript.pages.academy/big-trip/.
-Каждый запрос к серверу должен содержать заголовок Authorization со значением Basic ${случайная строка}. Например, Basic er883jdzbdw. Случайная строка формируется однократно при старте приложения.
-Ниже описаны структуры данных, которые отдаёт или принимает сервер, и доступные методы для обращения. Путь, указанный рядом с методом, — это часть адреса, по которому нужно обращаться к серверу. Например, по адресу https://14.ecmascript.pages.academy/big-trip/points можно сделать GET-запрос, чтобы получить все точки маршрута, а можно сделать POST-запрос, чтобы отправить созданную пользователем точку маршрута.
-1.9.1 Ресурсы
-Структуры данных:
-Destination:
-{
-  "description": "Chamonix, is a beautiful city, a true asian pearl, with crowded streets.",
-  "name": "Chamonix",
-  "pictures": [
-    {
-      "src": "http://picsum.photos/300/200?r=0.0762563005163317",
-      "description": "Chamonix parliament building"
-    }
-  ]
-}
-Offer:
-{
-  "type": "taxi",
-  "offers": [
-    {
-      "title": "Upgrade to a business class",
-      "price": 120
-    }, {
-      "title": "Choose the radio station",
-      "price": 60
-    }
-  ]
-}
-Offer.type — одно из следующих значений:
-["taxi", "bus", "train", "ship", "transport", "drive", "flight", "check-in", "sightseeing", "restaurant"]
-Point:
-{
-  "base_price": 1100,
-  "date_from": "2019-07-10T22:55:56.845Z",
-  "date_to": "2019-07-11T11:22:13.375Z",
-  "destination": $Destination$,
-  "id": "0",
-  "is_favorite": false,
-  "offers": [
-    {
-      "title": "Choose meal",
-      "price": 180
-    }, {
-      "title": "Upgrade to comfort class",
-      "price": 50
-    }
-  ],
-  "type": "bus"
-}
-Point.type — одно из следующих значений:
-["taxi", "bus", "train", "ship", "transport", "drive", "flight", "check-in", "sightseeing", "restaurant"]
-LocalPoint:
-{ 
-  "base_price": 222,
-  "date_from": "2019-07-10T22:55:56.845Z",
-  "date_to": "2019-07-11T11:22:13.375Z",
-  "destination": $Destination$,
-  "is_favorite": false,
-  "offers": [
-    {
-      "title": "Choose meal",
-      "price": 180
-    }, {
-      "title": "Upgrade to comfort class",
-      "price": 50
-    }
-  ],
-  "type": "taxi"
-}
-AuthorizationError:
-{
-  "error": 401,
-  "message": "Header Authorization is not correct"
-}
-NotFoundError:
-{
-  "error": 404,
-  "message": "Not found"
-}
-Точки маршрута /points
-GET /points
-Код ответов:
-200 OK;
-401 Unauthorized.
-Пример:
-
-Request:
-
-URL: GET /points;
-Headers: Authorization: Basic kTy9gIdsz2317rD.
-Response:
-
-Status: 200 OK;
-Body: массив из элементов вида Point.
-Request:
-
-URL: GET /points.
-Response:
-
-Status: 401 Unauthorized;
-Body: структура AuthorizationError.
-POST /points
-Создание новой точки маршрута.
-
-Код ответов:
-200 OK;
-401 Unauthorized.
-Пример:
-
-Request:
-URL: POST /points;
-Headers: Authorization: Basic kTy9gIdsz2317rD;
-Body: структура LocalPoint.
-Response:
-Status: 200 OK;
-Body: структура Point.
-PUT /points/: id
-Редактирование точки маршрута.
-
-Код ответов:
-200 OK;
-401 Unauthorized;
-404 Not found.
-Пример:
-
-Request:
-URL: PUT points/31;
-Headers: Authorization: Basic kTy9gIdsz2317rD;
-Body: структура Point.
-Response:
-Status: 200 OK;
-Body: структура Point.
-DELETE /points/: id
-Удаление точки маршрута.
-
-Код ответов:
-200 OK;
-401 Unauthorized;
-404 Not found.
-Пример:
-
-Request:
-URL: DELETE points/31;
-Headers: Authorization: Basic kTy9gIdsz2317rD.
-Response:
-Status: 200 OK;
-Body: текст OK.
-Пункты назначения /destinations
-GET /destinations
-Получение доступных точек маршрута.
-
-Код ответов:
-200 OK;
-401 Unauthorized.
-Пример:
-
-Request:
-URL: GET /destinations;
-Headers: Authorization: Basic kTy9gIdsz2317rD.
-Response:
-Status: 200 OK;
-Body: массив из элементов вида Destination.
-Общий список дополнительных предложений /offers
-GET /offers
-Код ответов:
-200 OK;
-401 Unauthorized.
-Пример:
-
-Request:
-URL: GET /offers;
-Headers: Authorization: Basic kTy9gIdsz2317rD.
-Response:
-Status: 200 OK;
-Body: массив из элементов вида Offer.
-Синхронизация с сервером /points/sync
-Этот метод потребуется для реализации дополнительного задания про офлайн.
-
-Пример:
-
-Request:
-URL: POST /points/sync;
-Headers: Authorization: Basic kTy9gIdsz2317rD;
-Body: [$Point$, $Point$].
-Response:
-Status: 200 OK;
-Body:
-{
-  "created": [$Point$, $Point$],
-  "updated": [$Point$, $Point$],
-  "deleted": [$Point$, $Point$]
-}
 1.10 Обратная связь интерфейса
 На время загрузки вместо маршрута нужно вывести информационное сообщение.
 

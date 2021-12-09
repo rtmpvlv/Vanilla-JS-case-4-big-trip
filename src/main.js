@@ -13,13 +13,20 @@ import {
   MenuItem,
   SortType,
   UpdateType,
-  FilterType,
-  APIDataType
+  FilterType
 } from './utils/constants';
-import Api from './api';
+import toast from './utils/toast';
+import Api from './api/api';
+import Store from './api/store';
+import Provider from './api/provider';
 
 const AUTHORIZATION = 'Basic rtmpvlv';
 const END_POINT = 'https://14.ecmascript.pages.academy/big-trip';
+const STORE_PREFIX = 'big-trip-localstorage';
+const STORE_VER = 'v15';
+const STORE_POINTS_NAME = `${STORE_PREFIX}-points-${STORE_VER}`;
+const STORE_OFFERS_NAME = `${STORE_PREFIX}-offers-${STORE_VER}`;
+const STORE_DESTINATIONS_NAME = `${STORE_PREFIX}-destinations-${STORE_VER}`;
 
 const header = document.querySelector('.trip-main');
 const headerMenuNavigation = header.querySelector('.trip-controls__navigation');
@@ -32,6 +39,10 @@ const filterModel = new FilterModel();
 const offersModel = new OffersModel();
 const destinationsModel = new DestinationsModel();
 const api = new Api(END_POINT, AUTHORIZATION);
+const storePoints = new Store(STORE_POINTS_NAME, window.localStorage);
+const storeOffers = new Store(STORE_OFFERS_NAME, window.localStorage);
+const storeDestinations = new Store(STORE_DESTINATIONS_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, storePoints, storeOffers, storeDestinations);
 
 const menuView = new MenuView();
 const pathPresenter = new PathPresenter(header, pointModel);
@@ -45,12 +56,15 @@ const listPresenter = new ListPresenter(
   buttonPresenter,
   offersModel,
   destinationsModel,
-  api,
+  apiWithProvider,
 );
 
 function handleButtonClick() {
   statsPresenter.destroy();
   menuView.setTableLinkActive();
+  if (!window.navigator.onLine) {
+    toast('Can\'t create new point offline.');
+  }
   listPresenter.openAddForm();
   listPresenter.show();
   buttonPresenter.isDisabled();
@@ -87,14 +101,14 @@ const handleSiteMenuClick = (menuItem) => {
 filterPresenter.init();
 listPresenter.renderView();
 
-api.getData(APIDataType.DESTINATIONS)
+apiWithProvider.getDestinations()
   .then((destinations) => {
     destinationsModel.setDestinations(destinations);
-    return api.getData(APIDataType.OFFERS);
+    return apiWithProvider.getOffers();
   })
   .then((offers) => {
     offersModel.setOffers(offers);
-    return api.getData(APIDataType.POINTS);
+    return apiWithProvider.getPoints();
   })
   .then((points) => {
     pointModel.setPoints(UpdateType.INIT, points);
@@ -108,6 +122,19 @@ api.getData(APIDataType.DESTINATIONS)
     render(headerMenuNavigation, menuView);
     menuView.setMenuClickHandler(handleSiteMenuClick);
   });
+
+window.addEventListener('load', () => {
+  navigator.serviceWorker.register('/service-worker.js');
+});
+
+window.addEventListener('online', () => {
+  document.title = document.title.replace(' [offline]', '');
+  apiWithProvider.sync();
+});
+
+window.addEventListener('offline', () => {
+  document.title += ' [offline]';
+});
 
 // Не отрабатывает кнопка Добавить на пустом листе
 // Дата окончания может быть меньше даты начала события. 49
