@@ -4,7 +4,7 @@ import AbstractView from './abstract';
 const createTripFiltersTemplate = ((filter, currentType, isDisabled) => {
   const filterItemTemplate = filter.map(({ type, name, count }) => `
   <div class="trip-filters__filter">
-     <input id="filter-${name}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${type}" ${type === currentType ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+     <input id="filter-${name}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${type}" ${type === currentType ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} ${count === 0 ? 'disabled' : ''}>
      <label class="trip-filters__filter-label" for="filter-${name}">${name} ${count}</label>
   </div>`).join('');
 

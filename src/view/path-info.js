@@ -26,7 +26,7 @@ const renderDateInformation = ((array) => {
 const calcTotalPrice = (array) => {
   let sum = 0;
   array.forEach((element) => {
-    sum += element.basePrice;
+    sum += element.basePrice + element.offers.reduce((acc, cur) => acc + cur.price, 0);
   });
   return sum;
 };
